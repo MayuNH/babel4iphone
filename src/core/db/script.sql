@@ -1,0 +1,20 @@
+USE genoma;
+
+CREATE TABLE account
+(
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(25) NOT NULL UNIQUE,
+  passwd VARCHAR(25) NOT NULL,
+  email VARCHAR(60) NOT NULL
+) ENGINE=INNODB;
+
+CREATE TABLE dna
+(
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  account_id INT,
+  creation_date CHAR(10) NOT NULL,
+  cur_timestamp CHAR(10) NOT NULL,
+  decaying_time CHAR(10) NOT NULL,
+  genes VARCHAR(500) NOT NULL,
+  FOREIGN KEY (account_id) REFERENCES account(id) ON DELETE CASCADE
+) ENGINE=INNODB;
