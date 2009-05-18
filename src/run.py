@@ -1,6 +1,6 @@
 from twisted.internet import reactor
 from core.manager import Manager
-from core.db.models import *
+from core.db.models import Session
 
 class Server(object):
     
@@ -9,14 +9,16 @@ class Server(object):
     
     def mainloop(self):
         for id, p in self.manager.logged.items():
-            tmp = ""
-            for dna in p:
-                dna.update()
+            tmp = "%s %s %s" % (p.id, 
+                                p.username, 
+                                p.passwd)
+            for dna in p.dna:
                 tmp += "\n\t%s %s %s" % (dna.creation_date, 
                                          dna.cur_timestamp, 
                                          dna.decaying_time)
-            tmp = "Account %s%s" % (id, tmp)
+                dna.update()
             print tmp
+        Session.commit()
         reactor.callLater(1.0, self.mainloop)
 
 

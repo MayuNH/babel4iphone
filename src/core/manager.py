@@ -1,17 +1,16 @@
-from singleton import Singleton
 from db.models import *
 
-class Manager(Singleton):
+class Manager(object):
 
-    def initialize(self):
+    def __init__(self):
         self.logged = {}
     
     def login(self, u, p):
         try:
-            u = Session.query(Account).filter(and_(Account.username == u, 
-                                                   Account.passwd == p)).one()
+            u = Session.query(Account).filter(and_(Account.username==u, 
+                                                   Account.passwd==p)).one()
             acc = Session.query(Account).filter(Account.id==u.id).one()
-            self.logged[u.id] = acc.dna
+            self.logged[u.id] = acc
         except Exception, e:
             print e
             return 0
