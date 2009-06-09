@@ -17,6 +17,7 @@ class Player(object):
         self.image.scale(self.scale)
         self.image.draw(self.rect.topleft)
 
+
 if __name__ == '__main__':
     sc = pygegl.scene.create("title", [800, 600])
     sc.addObject(Player())

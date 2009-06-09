@@ -13,7 +13,7 @@ def load(elem):
     return Surface(elem)
 
 
-class Surface:
+class Surface(object):
 
     def __init__(self, elem, filters = ["filter"]):
         if type(elem) is str:

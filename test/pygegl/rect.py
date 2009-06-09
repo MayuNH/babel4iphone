@@ -1,4 +1,4 @@
-class _rect:
+class _rect(object):
     
     def __init__(self, x, y, w, h):
         self.x = float(x)
@@ -134,6 +134,7 @@ class Rect(object):
                rect._r.y >= self._r.y and \
                rect._r.x < self._r.x + self._r.w and \
                rect._r.y < self._r.y + self._r.h
+
 
 def _rect_collide(a, b):
     return a.x + a.w > b.x and b.x + b.w > a.x and \

@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 #Please send me the results of this speed test on the
 #googlecode wiki page: http://code.google.com/p/pygl2d/wiki/SpeedTests
 
