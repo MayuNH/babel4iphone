@@ -25,27 +25,29 @@ class Surface(object):
         self.texture = texture.Texture(self.surface, filters)
         
         # image dimensions
-        self.size = self.surface.get_size()
-        self.width = self.w = self.size[0]
-        self.height = self.h = self.size[1]
+        [self.w, self.h] = self.surface.get_size()
+        self.center = [self.w / 2, self.h / 2]
         self.win_size = display.get_size()
         
         # image mods
         self.rotation = 0
         self.scalar = 1.0
         self.color = [1.0, 1.0, 1.0, 1.0]
-        self.center = [self.w / 2, self.h / 2]
         
+        # setting GL
         self.dl = glGenLists(1)
         glNewList(self.dl, GL_COMPILE)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glBegin(GL_QUADS)
-        glTexCoord2i(0, 0); glVertex3f(-self.w / 2.0, -self.h / 2.0,0)
-        glTexCoord2i(1, 0); glVertex3f( self.w / 2.0, -self.h / 2.0,0)
-        glTexCoord2i(1, 1); glVertex3f( self.w / 2.0,  self.h / 2.0,0)
-        glTexCoord2i(0, 1); glVertex3f(-self.w / 2.0,  self.h / 2.0,0)
+        glTexCoord2i(0, 0); glVertex3f(-self.w / 2.0, -self.h / 2.0, 0)
+        glTexCoord2i(1, 0); glVertex3f( self.w / 2.0, -self.h / 2.0, 0)
+        glTexCoord2i(1, 1); glVertex3f( self.w / 2.0,  self.h / 2.0, 0)
+        glTexCoord2i(0, 1); glVertex3f(-self.w / 2.0,  self.h / 2.0, 0)
         glEnd()
         glEndList()
+    
+    def get_at(self, pos):
+        return self.surface.get_at(pos) # ???
     
     def delete(self):
         glRemoveTextures([self.texture])
@@ -61,13 +63,13 @@ class Surface(object):
         self.color = [R / 255.0, G / 255.0, B / 255.0, A / 255.0]
     
     def get_width(self):
-        return self.surface.get_width() * self.scalar
+        return self.w * self.scalar
     
     def get_height(self):
-        return self.surface.get_height() * self.scalar
+        return self.h * self.scalar
     
     def get_rect(self):
-        return rect.Rect(0, 0, self.get_width(), self.get_height())
+        return rect.Rect(0, 0, self.get_width(), self.get_height()) # ???
     
     def draw(self, pos):
         glPushMatrix()

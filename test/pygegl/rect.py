@@ -118,7 +118,7 @@ class Rect(object):
         r = [self._r.x, self._r.y, self._r.w, self._r.h]
         r[key] = value
         self._r.x, self._r.y, self._r.w, self._r.h = r
-        
+    
     def move(self, dx, dy):
         return Rect(self._r.x + dx, self._r.y + dy, self._r.h, self._r.w)
     
@@ -129,11 +129,11 @@ class Rect(object):
     def colliderect(self, rect):
         return _rect_collide(self, rect)
     
-    def collidepoint(self, rect):
-        return rect._r.x >= self._r.x and \
-               rect._r.y >= self._r.y and \
-               rect._r.x < self._r.x + self._r.w and \
-               rect._r.y < self._r.y + self._r.h
+    def collidepoint(self, pos):
+        return pos[0] >= self._r.x and \
+               pos[1] >= self._r.y and \
+               pos[0] < self._r.x + self._r.w and \
+               pos[1] < self._r.y + self._r.h
 
 
 def _rect_collide(a, b):
