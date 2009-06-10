@@ -9,13 +9,13 @@ from pygame.locals import *
 
 import rect, display, texture
 
-def load(elem):
-    return Surface(elem)
+def load(elem, pos = [0, 0], filters = ["filter"]):
+    return Surface(elem, pos, filters)
 
 
 class Surface(object):
 
-    def __init__(self, elem, filters = ["filter"]):
+    def __init__(self, elem, pos = [0, 0], filters = ["filter"]):
         if type(elem) is str:
             self.surface = pygame.image.load(elem)
         else:
@@ -25,9 +25,13 @@ class Surface(object):
         self.texture = texture.Texture(self.surface, filters)
         
         # image dimensions
-        [self.w, self.h] = self.surface.get_size()
+        [self.width, self.height] = [self.w, self.h] = self.surface.get_size()
         self.center = [self.w / 2, self.h / 2]
         self.win_size = display.get_size()
+        
+        # rect
+        self.rect = rect.Rect(0, 0, self.w, self.h)
+        self.rect.center = pos
         
         # image mods
         self.rotation = 0
@@ -46,8 +50,8 @@ class Surface(object):
         glEnd()
         glEndList()
     
-    def get_at(self, pos):
-        return self.surface.get_at(pos) # ???
+    #def get_at(self, pos):
+    #    return self.surface.get_at(pos) # ???
     
     def delete(self):
         glRemoveTextures([self.texture])
@@ -55,6 +59,12 @@ class Surface(object):
     
     def scale(self, scale):
         self.scalar = scale
+        
+        # rect
+        self.rect.width = self.w * scale
+        self.rect.height = self.h * scale
+        self.rect.x = self.rect.x
+        self.rect.y = self.rect.y
     
     def rotate(self, rotation):
         self.rotation = rotation
@@ -69,12 +79,12 @@ class Surface(object):
         return self.h * self.scalar
     
     def get_rect(self):
-        return rect.Rect(0, 0, self.get_width(), self.get_height()) # ???
+        return self.rect
     
-    def draw(self, pos):
+    def draw(self):
         glPushMatrix()
-        glTranslatef(pos[0] + self.center[0], 
-                     self.win_size[1] - pos[1] - self.center[1],
+        glTranslatef(self.rect.x + self.rect.w / 2, 
+                     self.win_size[1] - self.rect.y - self.rect.h / 2,
                      0)
         glColor4f(*self.color)
         glRotatef(self.rotation, 0, 0, 1)

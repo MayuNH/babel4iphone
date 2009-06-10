@@ -23,9 +23,8 @@ import surface
 class gobj(object):
     
     def __init__(self, file_name, pos):
-        self.image = surface.load(file_name)
+        self.image = surface.load(file_name, pos)
         self.rect = self.image.get_rect()
-        self.rect.center = pos
         
         self.is_picked = False
         self.is_movable = False
@@ -43,17 +42,17 @@ class gobj(object):
     
     def is_hit(self, pos):
         if self.is_showed and self.rect.collidepoint(pos):
-            x = pos[0] - self.rect.left
-            y = pos[1] - self.rect.top
-            col = self.image.get_at((int(x), int(y)))
+            x = pos[0] - self.rect.x
+            y = pos[1] - self.rect.y
+            #col = self.image.get_at((int(x), int(y)))
             #print col
-            if len(col) == 4 and col[3] < 255:
-                return False
-            else:
-                return True
+            #if len(col) == 4 and col[3] < 255:
+            #    return False
+            #else:
+            return True
         return False
     
-    def MouseMove(self, rel):
-        if self.is_showed and self.is_movable:
-            self.rect.x += rel[0]
-            self.rect.y += rel[1]
+#     def MouseMove(self, rel):
+#         if self.is_showed and self.is_movable:
+#             self.rect.x += rel[0]
+#             self.rect.y += rel[1]

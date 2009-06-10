@@ -71,7 +71,7 @@ class Event(object):
         while self.events.__len__() > 0:
             e = self.events.pop(0)
             try:
-                print e
+                #print e
                 getattr(e[0], e[1])(*e[2:])
             except Exception, ex:
                 #print ex
