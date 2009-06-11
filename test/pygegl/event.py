@@ -50,7 +50,8 @@ class Event(object):
             obj = self.__get_collide(event.pos)
             print obj
         except Exception, e:
-            print e
+            #print e
+            pass
         
         if event.type == MOUSEBUTTONDOWN:
             if event.button == 1:

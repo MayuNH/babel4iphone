@@ -37,6 +37,11 @@ class Scene(singleton.Singleton):
         """Initialize GL"""
         display.init(screen_size, flags)
         display.set_caption(caption)
+        
+        self.init_scene()
+    
+    def init_scene(self):
+        pass
     
     def addObject(self, obj):
         self.objects.append(obj)

@@ -12,6 +12,9 @@ class Rect(object):
     def __init__(self, x, y, w, h):
         self._r = _rect(x, y, w, h)
     
+    def __repr__(self):
+        return [self._r.x, self._r.y, self._r.w, self._r.h]
+    
     def __getattr__(self, name):
         if name in ('top', 'y'):
             return self._r.y
@@ -95,11 +98,11 @@ class Rect(object):
             if value[0] < 0 or value[1] < 0:
                 self._ensure_proxy()
             self._r.w, self._r.h = value
-        elif name == 'width':
+        elif name == 'width' or name == 'w':
             if value < 0:
                 self._ensure_proxy()
             self._r.w = value
-        elif name == 'height':
+        elif name == 'height' or name == 'h':
             if value < 0:
                 self._ensure_proxy()
             self._r.h = value
