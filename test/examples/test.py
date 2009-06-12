@@ -8,8 +8,8 @@ class Player(pygegl.gobj.gobj):
     def draw(self):
         self.i += 0.01
         
-        self.surface.rotate(0)
-        self.surface.colorize(255.0, 255.0, 255.0, 255.0)
+        #self.surface.rotate(self.i*30)
+        #self.surface.colorize(255.0, 255.0, 255.0, 255.0)
         self.surface.scale(self.i)
         
         rect = self.surface.get_rect()
@@ -19,5 +19,5 @@ class Player(pygegl.gobj.gobj):
 
 if __name__ == '__main__':
     sc = pygegl.scene.create("title", [800, 600])
-    sc.addObject(Player("mike.png", [300, 300]))
+    sc.addObject(Player("vito.png", [300, 300]))
     sc.mainloop(0.08)
