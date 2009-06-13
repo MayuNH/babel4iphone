@@ -4,9 +4,10 @@ import pygegl
 class Player(pygegl.gobj.gobj):
     
     i = 0.3
+    inc = 0
     
     def draw(self):
-        self.i += 0.01
+        self.i += self.inc
         
         #self.surface.rotate(self.i*30)
         #self.surface.colorize(255.0, 255.0, 255.0, 255.0)
@@ -19,5 +20,8 @@ class Player(pygegl.gobj.gobj):
 
 if __name__ == '__main__':
     sc = pygegl.scene.create("title", [800, 600])
-    sc.addObject(Player("vito.png", [300, 300]))
+    p = Player("vito.png", [300, 300])
+    p.inc = 0.01
+    sc.addObject(p)
+    sc.addObject(Player("prova.png", [500, 500]))
     sc.mainloop(0.08)
