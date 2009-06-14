@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from singleton import Singleton
+import singleton
 
 def create():
     return Scene()
 
 
-class Scene(Singleton):
+class Scene(singleton.Singleton):
     
     def initialize(self):
         self.objects = []
