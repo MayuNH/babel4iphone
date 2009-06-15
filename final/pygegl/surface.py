@@ -39,7 +39,7 @@ class Surface(object):
         self.win_size = display.get_size()
         
         # image mods
-        self.rotation = 0
+        self.rotation = 0.0
         self.scalar = 1.0
         self.color = [1.0, 1.0, 1.0, 1.0]
         self.cx, self.cy = self.w / 2, self.h / 2

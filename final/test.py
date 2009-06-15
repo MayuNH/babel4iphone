@@ -2,11 +2,11 @@ import pygegl
 
 class Player(object):
     
-    def __init__(self, x = 100, y = 100):
+    def __init__(self, name, x = 100, y = 100):
         self.angle = 0.0
         self.alpha = 200.0
         self.scale = 0.75
-        self.image = pygegl.surface.load("mike.png")
+        self.image = pygegl.surface.load(name)
         [self.x, self.y] = [x, y]
     
     def draw(self):
@@ -21,8 +21,8 @@ def main():
     
     sc = pygegl.scene.create()
     
-    sc.addObject(Player())
-    sc.addObject(Player(110, 110))
+    sc.addObject(Player("mike.png"))
+    sc.addObject(Player("south.png", 50, 50))
     
     pygegl.display.mainLoop()
 
