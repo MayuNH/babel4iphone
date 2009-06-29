@@ -18,7 +18,7 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-
+from Image import *
 import scene, sys
 
 SCREEN_SIZE = [800, 600]
@@ -38,8 +38,9 @@ def init(width, height):
     glutDisplayFunc(DrawGLScene)
     #glutFullScreen()
     glutIdleFunc(DrawGLScene)
-    glutReshapeFunc(ReSizeGLScene)
-    glutKeyboardFunc(keyPressed)
+    #glutReshapeFunc(ReSizeGLScene)
+    glutKeyboardFunc(keyEvent)
+    glutMouseFunc(mouseEvent)
     
     init_gl()
 
@@ -54,12 +55,12 @@ def DrawGLScene():
     
     glutSwapBuffers()
 
-def ReSizeGLScene(width, height):
-    glViewport(0, 0, width, height)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(0, width, 0, height, -1, 1)
-    glMatrixMode(GL_MODELVIEW)
+#def ReSizeGLScene(width, height):
+#    glViewport(0, 0, width, height)
+#    glMatrixMode(GL_PROJECTION)
+#    glLoadIdentity()
+#    glOrtho(0, width, 0, height, -1, 1)
+#    glMatrixMode(GL_MODELVIEW)
 
 def begin_draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -81,10 +82,92 @@ def set_caption(caption):
 def mainLoop():
     glutMainLoop()
 
-def keyPressed(*args):
+def keyEvent(*args):
     if args[0] == ESCAPE:
         sys.exit()
 
+
+from OpenGL import platform, constants, constant, arrays
+from OpenGL import extensions, wrapper
+from OpenGL.GL import glget
+import ctypes
+from OpenGL.raw.GL.EXT.framebuffer_object import *
+
+glGenFramebuffersEXT = wrapper.wrapper(glGenFramebuffersEXT).setOutput(
+    'framebuffers', 
+    lambda x: (x,), 
+    'n')
+
+glGenRenderbuffersEXT = wrapper.wrapper(glGenRenderbuffersEXT).setOutput(
+    'renderbuffers', 
+    lambda x: (x,), 
+    'n')
+
+def mouseEvent(button, event, x, y):
+    import texture
+    #data = None
+    
+    image = open("mike.png")
+    # convert to GL texture
+    textureID = texture.Texture(image)
+    
+    # image dimensions
+    size = image.size
+    
+    rboId = glGenRenderbuffersEXT(1)
+    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, int(rboId));
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
+                             int(size[0]), int(size[1]));
+    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0)
+    
+    fboId = glGenFramebuffersEXT(1)
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, int(fboId))
+    
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                              GL_TEXTURE_2D, textureID, 0)
+    
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                 GL_RENDERBUFFER_EXT, int(rboId))
+    
+    status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)
+    print status == GL_FRAMEBUFFER_COMPLETE_EXT
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
+    
+    # render
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, int(fboId))
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    
+    dl = glGenLists(1)
+    glNewList(dl, GL_COMPILE)
+    glBindTexture(GL_TEXTURE_2D, textureID)
+    glBegin(GL_QUADS)
+    glTexCoord2i(0, 0); glVertex3f(-size[0] / 2.0, -size[0] / 2.0, 0)
+    glTexCoord2i(1, 0); glVertex3f( size[0] / 2.0, -size[0] / 2.0, 0)
+    glTexCoord2i(1, 1); glVertex3f( size[0] / 2.0,  size[0] / 2.0, 0)
+    glTexCoord2i(0, 1); glVertex3f(-size[0] / 2.0,  size[0] / 2.0, 0)
+    glEnd()
+    #glBindTexture(GL_TEXTURE_2D, textureID)
+    glEndList()
+    
+    glPushMatrix()
+    glTranslatef(x, 600-y, 0)
+    glColor4f(255,255,255,255)
+    glRotatef(0, 0, 0, 1)
+    glScalef(1, 1, 1)
+    glCallList(dl)
+    glPopMatrix()
+    
+    glutSwapBuffers()
+    
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0)
+    glBindTexture(GL_TEXTURE_2D, textureID)
+    glGenerateMipmapEXT(GL_TEXTURE_2D)
+    glBindTexture(GL_TEXTURE_2D, 0)
+    
+    data = glReadPixels(x, 600-y, 1, 1, GL_RGBA, GL_UNSIGNED_INT)
+    #data = glReadPixelSub(x, 600-y, 1, 1, GL_RGBA, GL_UNSIGNED_INT)
+    
+    print data
 
 # Internal from pygl2d
 

@@ -27,7 +27,7 @@ def Texture(surface):
         data = surface.tostring("raw", "RGBX", 0, -1)
     
     glBindTexture(GL_TEXTURE_2D, texture_id)
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+    
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
@@ -44,5 +44,6 @@ def Texture(surface):
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+    glBindTexture(GL_TEXTURE_2D, 0)
     
     return texture_id

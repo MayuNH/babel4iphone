@@ -28,6 +28,7 @@ class Scene(singleton.Singleton):
     
     def addObject(self, obj):
         self.objects.append(obj)
+        obj.image.offscreen_x = len(self.objects)
     
     def delObject(self, obj):
         self.objects.remove(obj)

@@ -6,7 +6,8 @@ class Player(object):
         self.angle = 0.0
         self.alpha = 200.0
         self.scale = 0.75
-        self.image = pygegl.surface.load(name)
+        self.image = pygegl.surface.load(name) # obbligare che sia image
+        # quando definiro la classe Player :|
         [self.x, self.y] = [x, y]
     
     def draw(self):
