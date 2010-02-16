@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
+<map version="1.0" orientation="orthogonal" width="32" height="32" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="ortho-test1" tilewidth="32" tileheight="32">
+  <image source="ortho-test1.png"/>
+ </tileset>
+ <layer name="Layer 0" width="32" height="32">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA6WX0QnDMAxE24B3cPcfJ0uVfhiOx52suAKRxE30TpLtpPP9es3gV9N/lsbujSc2+Wm8Yq9zZ+QPHKdwr4JNfoed+MPoYA0qdqqH06N8cofha/2XzQ0vsZU/4Bc4rP8a0+unfJ1/rs7sITWwDqe5L757Zga+5p/YHK9s4H7tg7I1zuJ/TA3SdcV3zp4z7sfwT0x5SUfKi8dTc7wn/o/t5k1nX+tocb10Mdl3d83nGYucxCafe4w+X2kmu4qR9o4uu3ova3y3V3P8DvPIaXExae696WIuc3yn030bJLb7TujyT+ZPYic9HX6qQ8Wv1q8eO3ydj7o3JavWAzXpfa7/5PHYYad8qUP5/O5RX+xuPyqdqjfxqcFpSjruh9p2+zxzp5Ydn9/7lQ669j7VpmIpz/H12sXjPGQtUu6pBm7M7XM8T/k7PnNPNe/8/0oaklX/8075jv2k/6kmXb7mu1t/VZ76e5ef9iP1Ts7VmvwCOPY1nAAQAAA=
+  </data>
+ </layer>
+ <layer name="Layer 1" width="32" height="32">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3OsQ0AIAwDwWQb9p+QIg0F1BbSneT6XcXL6lmyneif7dSPZPv2AQAA4Hcbjm9fZwAQAAA=
+  </data>
+ </layer>
+</map>
