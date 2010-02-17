@@ -1,13 +1,9 @@
 * nel client implementare i turni in base al pg + veloce e implementare la selezione dell'avversario
-
 * implementare i menu contestuali ai personaggi in campo
   (leggere db locale in base al livello, hp, mp del pg o presenza di pg particolari in campo ecc)
-
 * salvare le azioni scelte per ogni pg in maniera da mandarele alla scadenza del turno 
   o quando si e' fatta la scelta per ogni pg proprio (nn + alternarsi di turni ma turno, turno, animazione)
-
 * quando il server riceve le scelte dei 2 client invia ai rispettivi le mosse dell'avversario.
   i client allora devono creare solo una serie di animazioni, sara' cmq il serve una volta ottenuto 
   OK fine animazioni (da tutti e 2 i client o per timeout) a inviare ai 2 client lo stato attuale dei pg in campo
-
 * fine hp di tutti i pg di una parte fine duello
