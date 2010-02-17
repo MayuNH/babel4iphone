@@ -55,6 +55,12 @@
 	[self addChild:sprite z:p tag:20+p];
 }
 
+-(void) playFight
+{
+	id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
+	[interface setTurn:@"anim"];
+}
+
 // on "dealloc" you need to release all your retained objects
 -(void) dealloc
 {	

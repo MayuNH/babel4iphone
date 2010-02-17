@@ -270,7 +270,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>6</integer>
+									<integer>10</integer>
 									<integer>4</integer>
 									<integer>0</integer>
 								</array>
@@ -313,7 +313,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>SharedData.m</string>
+								<string>GameLayer.m</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -321,11 +321,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>SharedData.m</string>
+										<string>GameLayer.m</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>88214341112C6F4E0085572B</string>
+										<string>8821435F112C9F000085572B</string>
 										<key>history</key>
 										<array>
 											<string>887E47C510C6EAC600F260C8</string>
@@ -376,11 +376,11 @@
 											<string>8859429C112490EB00A22194</string>
 											<string>8859429F112490EB00A22194</string>
 											<string>885942BB1124922E00A22194</string>
-											<string>885942C51124930200A22194</string>
-											<string>886C9ABA1125D57000939774</string>
-											<string>88214332112C6CB50085572B</string>
-											<string>88214333112C6CB50085572B</string>
-											<string>88214334112C6CB50085572B</string>
+											<string>88214347112C9D2B0085572B</string>
+											<string>88214348112C9D2B0085572B</string>
+											<string>88214349112C9D2B0085572B</string>
+											<string>8821434A112C9D2B0085572B</string>
+											<string>8821434B112C9D2B0085572B</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -580,8 +580,8 @@
 	<array>
 		<string>1CD10A99069EF8BA00B06720</string>
 		<string>887E47A910C6EA4900F260C8</string>
-		<string>1C78EAAD065D492600B07095</string>
 		<string>/Users/amati/Code/git.repos/babel4iphone/Babel/Babel.xcodeproj</string>
+		<string>1C78EAAD065D492600B07095</string>
 	</array>
 	<key>WindowString</key>
 	<string>0 59 1440 819 0 0 1440 878 </string>

@@ -137,6 +137,12 @@
 		[self closeMenu];
 		[lb setString:@"End of fight"];
 	}
+	else if ([name isEqualToString:@"anim"])
+	{
+		turn = NO;
+		[self closeMenu];
+		[lb setString:@""];
+	}
 	else if ([name isEqualToString:@"you"])
 	{
 		turn = YES;

@@ -105,15 +105,22 @@ class Core(object):
                     self.delArena(a)
                     return
                 
+                uids.extend(["__fight__"])
                 a["turn"] = next(uids, a["turn"])
-                a["time"] = time.time()
-                
-                for c in clients:
-                    if c.uid == a["turn"]:
-                        self.__server.sendLine(c.socket, "T|you")
-                    else:
-                        self.__server.sendLine(c.socket, 
-                                               "T|%s" % self.getClient(a["turn"]).name)
+                if "__fight__" == a["turn"]:
+                    a["time"] = time.time() + 10 # tempo animazione
+                    
+                    for c in clients:
+                        self.__server.sendLine(c.socket, "A|dati animazione")
+                else:
+                    a["time"] = time.time()
+                    
+                    for c in clients:
+                        if c.uid == a["turn"]:
+                            self.__server.sendLine(c.socket, "T|you")
+                        else:
+                            self.__server.sendLine(c.socket, 
+                                                   "T|%s" % self.getClient(a["turn"]).name)
     
     def __getArenaByUid(self, u):
         if self.__a.has_key(u):

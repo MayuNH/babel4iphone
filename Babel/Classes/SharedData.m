@@ -146,6 +146,13 @@
 		[interface setTurn:[arr objectAtIndex:1]];
 		NSLog(@"Turn: %@", [arr objectAtIndex:1]);
 	}
+	// ANIM FIGHT
+	else if ([[arr objectAtIndex:0] isEqualToString:@"A"])
+	{
+		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
+		[game playFight];
+		NSLog(@"play fight: %@", [arr objectAtIndex:1]);
+	}
 	// CHARACTER
 	else if ([[arr objectAtIndex:0] isEqualToString:@"P1"])
 	{
