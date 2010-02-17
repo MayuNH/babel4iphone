@@ -162,16 +162,13 @@ class Core(object):
             self.__createArena(c1.uid, c2.uid, c1.uid, 0)
             # invio dati team
             self.__sendParty(c1, c2, 1) # 1 manda i dati dei team a tutti e 2 i client
-            
             self.__server.sendLine(c1.socket, "T|you")
             self.__server.sendLine(c2.socket, "T|%s" % c1.name)
-            
             self.__a[c1.uid]["time"] = time.time()  # mettere il time solo dopo aver inviato i dati ai client
             print "Create arena %s|%s" % (c1.uid, c2.uid)
         elif mode >= 3:
             # invio dati team solo a c1 se cade (a chi rientra appunto)
             self.__sendParty(c1, c2)
-            
             msgs = None
             if c1.uid == arena["turn"]:
                 msgs = "T|you"
