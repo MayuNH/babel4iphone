@@ -1,5 +1,7 @@
 #!/usr/bin/python -O
 
+# old server in twisted
+
 from twisted.internet import reactor
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver

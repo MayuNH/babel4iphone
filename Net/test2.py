@@ -1,3 +1,5 @@
+# client test for server
+
 from twisted.internet import reactor
 #from twisted.internet.threads import deferToThread
 from twisted.internet.protocol import Factory
