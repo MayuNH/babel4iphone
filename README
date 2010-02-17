@@ -14,7 +14,7 @@ along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 babel4iphone is a Online RPG turn-based for iPhone.
 
-The game client is implemented in objective-c using cocos2d-iphone Framework (LGPL) <http://code.google.com/p/cocos2d-iphone/>
+The game client is implemented in objective-c using cocos2d-iphone Framework (LGPL) http://code.google.com/p/cocos2d-iphone/
 In directory named "Babel" there is a file project for XCode.
 
 The game server is implemented in python, the scripts are in directory named "Net".
