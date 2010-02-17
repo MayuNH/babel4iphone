@@ -73,6 +73,9 @@
 
 -(void) initMenu:(NSArray *)menuitems
 {
+	if (menuitems == NULL)
+		menuitems = [@"Attack;Defende;Magics;Invocations;Items" componentsSeparatedByString:@";"];
+	
 	CCMenu *controller = (CCMenu *)[self getChildByTag:2];
 	if (turn && ![controller visible])
 	{
@@ -138,6 +141,7 @@
 	{
 		turn = YES;
 		[lb setString:@"It's your turn"];
+		[self initMenu:NULL];
 	}
 	else
 	{

@@ -29,9 +29,6 @@ class Core(object):
         self.__c = {}
         self.__a = {}
         self.__an = 0
-        
-        # menu principale fisso unico
-        self.__mmenu = "Attack;Defende;Magics;Invocations;Items"
     
     def getSockets(self):
         return [c.socket for c in self.__c.values()]
@@ -113,9 +110,7 @@ class Core(object):
                 
                 for c in clients:
                     if c.uid == a["turn"]:
-                        self.__server.sendLine(c.socket, 
-                                               ["T|you", 
-                                                "M|%s" % self.__mmenu])
+                        self.__server.sendLine(c.socket, "T|you")
                     else:
                         self.__server.sendLine(c.socket, 
                                                "T|%s" % self.getClient(a["turn"]).name)
@@ -168,7 +163,7 @@ class Core(object):
             # invio dati team
             self.__sendParty(c1, c2, 1) # 1 manda i dati dei team a tutti e 2 i client
             
-            self.__server.sendLine(c1.socket, ["T|you", "M|%s" % self.__mmenu])
+            self.__server.sendLine(c1.socket, "T|you")
             self.__server.sendLine(c2.socket, "T|%s" % c1.name)
             
             self.__a[c1.uid]["time"] = time.time()  # mettere il time solo dopo aver inviato i dati ai client
@@ -179,7 +174,7 @@ class Core(object):
             
             msgs = None
             if c1.uid == arena["turn"]:
-                msgs = ["T|you", "M|%s" % self.__mmenu]
+                msgs = "T|you"
             else:
                 msgs = ["T|%s" % self.getClient(arena["turn"]).name]
             self.__server.sendLine(c1.socket, msgs)
