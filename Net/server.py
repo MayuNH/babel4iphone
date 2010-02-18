@@ -66,7 +66,7 @@ class Server(object):
                 inputs = [self.server, sys.stdin]
                 scks = self.__core.getSockets()
                 inputs.extend(scks)
-                inputready, outputready, exceptready = select.select(inputs, scks, [])
+                inputready, outputready, exceptready = select.select(inputs, [], [], 1)
             except select.error, e:
                 break
             except socket.error, e:
@@ -86,7 +86,7 @@ class Server(object):
                         self.__core.delClientBySocket(s)
             self.__core.mainLoop()
             reactor.step()
-            time.sleep(1) # necessario altrim. scoppia CPU e DB :D
+            #time.sleep(1) # necessario altrim. scoppia CPU e DB :D
         self.server.close()
     
     def __dispatch(self, s):
