@@ -105,9 +105,7 @@ class Server(object):
                         if 'U' == m[0]:
                             self.__core.addClient(m[1], s)
                         elif 'F' == m[0]:
-                            c1 = self.__core.getClientBySocket(s)
-                            c2 = self.__core.getClient(m[1])
-                            self.__core.createArena(c1, c2)
+                            self.__core.createArena(s, m[1])
                         elif 'E' == m[0]:
                             print "Echo server: %s" % m[1]
                         elif 'M' == m[0]:

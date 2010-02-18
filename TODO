@@ -1,5 +1,3 @@
-* se escono tutti e 2 e rientrano non caricano i dati, ci potrebbe essere anim in turno
-* nel caso di rientro solo di 1 in arena potrebbe esserci l'animazione come turno attuale
 * nel client implementare i turni in base al pg + veloce e implementare la selezione dell'avversario
 * implementare i menu contestuali ai personaggi in campo
   (leggere db locale in base al livello, hp, mp del pg o presenza di pg particolari in campo ecc)

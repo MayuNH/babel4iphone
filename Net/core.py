@@ -62,8 +62,8 @@ class Core(object):
         except Exception, e:
             print e
         
-        if self.getClient(uid): # lo sleep potrebbe aspettare a ripulire il vecchio socket in caso di rilogin
-            self.__server.sendLine(s, "E|Wait 2 seconds for re-login")
+        if self.getClient(uid): # nel caso nn sia staro ripulito il vecchio socket x quella uid (login/out veloci)
+            self.__server.sendLine(s, "E|You are already logged")
         elif c:
             self.setClientMap(uid, c)
             print "Add client uid %s" % uid
@@ -107,12 +107,15 @@ class Core(object):
                 
                 uids.extend(["__fight__"])
                 a["turn"] = next(uids, a["turn"])
+                
                 if "__fight__" == a["turn"]:
+                    a["turn_name"] = "__fight__"
                     a["time"] = time.time() + 10 # tempo animazione
                     
                     for c in clients:
                         self.__server.sendLine(c.socket, "A|dati animazione")
                 else:
+                    a["turn_name"] = self.getClient(a["turn"]).name
                     a["time"] = time.time()
                     
                     for c in clients:
@@ -120,7 +123,7 @@ class Core(object):
                             self.__server.sendLine(c.socket, "T|you")
                         else:
                             self.__server.sendLine(c.socket, 
-                                                   "T|%s" % self.getClient(a["turn"]).name)
+                                                   "T|%s" % a["turn_name"])
     
     def __getArenaByUid(self, u):
         if self.__a.has_key(u):
@@ -140,60 +143,65 @@ class Core(object):
         print "Del arena id %s|%s" % (a["user_id1"], a["user_id2"])
     
     def __createArena(self, u1, u2, turn, time):
-        arena = {"id":self.__an, "user_id1":u1, "user_id2":u2, "turn":turn, "time":time}
+        arena = {"id":self.__an, 
+                 "user_id1":u1, 
+                 "user_id2":u2, 
+                 "turn":turn, 
+                 "turn_name": self.getClient(turn).name,
+                 "time":time}
         self.__an += 1
         self.__a[u1] = arena
         self.__a[u2] = arena
     
-    def createArena(self, c1, c2):
-        if not c2:
+    def createArena(self, s, uid2):
+        c1 = self.getClientBySocket(s)
+        
+        tmp1 = self.__getArenaByUid(c1.uid)
+        if tmp1 and uid2 != tmp1["user_id1"] and uid2 != tmp1["user_id2"]:
+            self.__server.sendLine(c1.socket, "E|You are in another arena")
+            return
+        
+        tmp2 = self.__getArenaByUid(uid2)
+        if tmp2 and c1.uid != tmp2["user_id1"] and c1.uid != tmp2["user_id2"]:
+            self.__server.sendLine(c1.socket, "E|Player busy")
+            return
+        
+        c2 = self.getClient(uid2)
+        if not c2 and not tmp2:
             self.__server.sendLine(c1.socket, "E|Player off-line")
             return
         
-        mode = 0
-        tmp = self.__getArenaByUid(c1.uid)
-        if tmp and c2.uid != tmp["user_id1"] and c2.uid != tmp["user_id2"]:
-            self.__server.sendLine(c1.socket, "E|You are in another arena")
-            return
-        else:
-            mode += 1
-        tmp = self.__getArenaByUid(c2.uid)
-        if tmp and c1.uid != tmp["user_id1"] and c1.uid != tmp["user_id2"]:
-            self.__server.sendLine(c1.socket, "E|Player busy")
-            return
-        else:
-            mode += 2
-        
-        arena = self.__getArenaByUid(c1.uid)
-        if not arena:
-            self.__createArena(c1.uid, c2.uid, c1.uid, 0)
+        if not tmp1:
+            self.__createArena(c1.uid, uid2, c1.uid, 0)
             # invio dati team
-            self.__sendParty(c1, c2, 1) # 1 manda i dati dei team a tutti e 2 i client
+            self.__sendParty(c1.uid, uid2, c1.socket, c2.socket) # 1 manda i dati dei team a tutti e 2 i client
             self.__server.sendLine(c1.socket, "T|you")
-            self.__server.sendLine(c2.socket, "T|%s" % c1.name)
+            self.__server.sendLine(c2.socket, "T|%s" % self.__a[c1.uid]["turn_name"])
             self.__a[c1.uid]["time"] = time.time()  # mettere il time solo dopo aver inviato i dati ai client
-            print "Create arena %s|%s" % (c1.uid, c2.uid)
-        elif mode >= 3:
+            print "Create arena %s|%s" % (c1.uid, uid2)
+        else:
             # invio dati team solo a c1 se cade (a chi rientra appunto)
-            self.__sendParty(c1, c2)
+            self.__sendParty(c1.uid, uid2, c1.socket, None)
             msgs = None
-            if c1.uid == arena["turn"]:
+            if c1.uid == tmp1["turn"]:
                 msgs = "T|you"
+            elif "__fight__" == tmp1["turn"]:
+                msgs = "A|dati animazione"
             else:
-                msgs = ["T|%s" % self.getClient(arena["turn"]).name]
+                msgs = "T|%s" % tmp1["turn_name"]
             self.__server.sendLine(c1.socket, msgs)
-            print "Client re-enter in arena %s|%s" % (c1.uid, c2.uid)
+            print "Client re-enter in arena %s|%s" % (c1.uid, uid2)
     
-    def __sendParty(self, c1, c2, flag = 0):
+    def __sendParty(self, u1, u2, s1, s2):
         d1 = ["%s,%s,%s,%s,%s" % \
-                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(c1.uid)]
+                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u1)]
         d2 = ["%s,%s,%s,%s,%s" % \
-                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(c2.uid)]
+                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u2)]
         t1 = ';'.join(d1)
         t2 = ';'.join(d2)
         msgs = ["P1|%s" % t1, "P2|%s" % t2]
         
-        self.__server.sendLine(c1.socket, msgs)
-        if flag:
+        self.__server.sendLine(s1, msgs)
+        if s2:
             msgs = ["P1|%s" % t2, "P2|%s" % t1]
-            self.__server.sendLine(c2.socket, msgs)
+            self.__server.sendLine(s2, msgs)

@@ -10,7 +10,7 @@ import random
 class ClientProtocol(LineReceiver):
     
     def __init__(self):
-        self.username = "U55555"
+        self.username = "6397D24E-299F-594E-BEE1-C1BBEA6C0B9E"
     
     def connectionMade(self):
         self.factory.client = self
@@ -67,7 +67,7 @@ class ClientFactory(Factory):
 
 
 def loop(f):
-    f.send("F|%s" % "U66666")
+    f.send("F|U66666")
     #f.send("E|%s" % random.randint(0, 100))
     #reactor.callLater(0, loop, f)
 
