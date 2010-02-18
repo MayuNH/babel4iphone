@@ -86,7 +86,6 @@ class Server(object):
                         self.__core.delClientBySocket(s)
             self.__core.mainLoop()
             reactor.step()
-            #time.sleep(1) # necessario altrim. scoppia CPU e DB :D
         self.server.close()
     
     def __dispatch(self, s):
