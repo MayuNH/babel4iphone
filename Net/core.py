@@ -171,17 +171,16 @@ class Core(object):
             self.__server.sendLine(c1.socket, "E|Player off-line")
             return
         
+        # get dati team
+        p1d, p2d = self.__getParty(c1.uid, uid2)
+        
         if not tmp1:
             self.__createArena(c1.uid, uid2, c1.uid, 0)
-            # invio dati team
-            self.__sendParty(c1.uid, uid2, c1.socket, c2.socket) # 1 manda i dati dei team a tutti e 2 i client
-            self.__server.sendLine(c1.socket, "T|you")
-            self.__server.sendLine(c2.socket, "T|%s" % self.__a[c1.uid]["turn_name"])
+            self.__server.sendLine(c1.socket, ["P1|%s" % p1d, "P2|%s" % p2d, "T|you"])
+            self.__server.sendLine(c2.socket, ["P1|%s" % p2d, "P2|%s" % p1d, "T|%s" % self.__a[c1.uid]["turn_name"]])
             self.__a[c1.uid]["time"] = time.time()  # mettere il time solo dopo aver inviato i dati ai client
             print "Create arena %s|%s" % (c1.uid, uid2)
         else:
-            # invio dati team solo a c1 se cade (a chi rientra appunto)
-            self.__sendParty(c1.uid, uid2, c1.socket, None)
             msgs = None
             if c1.uid == tmp1["turn"]:
                 msgs = "T|you"
@@ -189,19 +188,13 @@ class Core(object):
                 msgs = "A|dati animazione"
             else:
                 msgs = "T|%s" % tmp1["turn_name"]
-            self.__server.sendLine(c1.socket, msgs)
+            self.__server.sendLine(c1.socket, ["P1|%s" % p1d, "P2|%s" % p2d, msgs])
             print "Client re-enter in arena %s|%s" % (c1.uid, uid2)
     
-    def __sendParty(self, u1, u2, s1, s2):
+    def __getParty(self, u1, u2):
         d1 = ["%s,%s,%s,%s,%s" % \
                   (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u1)]
         d2 = ["%s,%s,%s,%s,%s" % \
                   (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u2)]
-        t1 = ';'.join(d1)
-        t2 = ';'.join(d2)
-        msgs = ["P1|%s" % t1, "P2|%s" % t2]
         
-        self.__server.sendLine(s1, msgs)
-        if s2:
-            msgs = ["P1|%s" % t2, "P2|%s" % t1]
-            self.__server.sendLine(s2, msgs)
+        return ';'.join(d1), ';'.join(d2)

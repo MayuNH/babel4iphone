@@ -47,6 +47,7 @@
 -(void) addEnemyCharacter:(NSArray *)attr position:(int)p
 {
 	NSString *fname = [[[NSString alloc] initWithFormat:@"%@", [attr objectAtIndex:1]] stringByAppendingString:@".png"];
+	NSLog(@"char p2: %@", fname);
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.scaleX = -0.4;

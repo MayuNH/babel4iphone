@@ -53,7 +53,7 @@ class Server(object):
             s.close()
         self.server.close()
     
-    def sendLine(self, s, msg, t = 0):
+    def sendLine(self, s, msg, t = 0.2):
         if type(msg) is StringType:
             msg = [msg]
         msg = DELIMETER.join(msg)
