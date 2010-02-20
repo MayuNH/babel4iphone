@@ -18,15 +18,21 @@
 
 #import <Foundation/Foundation.h>
 #import <CFNetwork/CFNetwork.h>
+#import <sqlite3.h>
 
 @interface SharedData : NSObject
 {
+	sqlite3 *database;
+	
 	NSInputStream *inputStream;
 	NSOutputStream *outputStream;
 	NSString *DELIMETER;
 }
 
 @property (nonatomic, retain) NSString *name;
+
+-(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
+-(void) dbGetCharacter:(int)cid;
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;

@@ -26,6 +26,8 @@
 
 -(void) dealloc
 {	
+	sqlite3_close(database);
+	
 	[inputStream release];
 	[outputStream release];
 	[DELIMETER release];
@@ -33,6 +35,21 @@
 	NSLog(@"------------------- RELEASE SINGETON DATA ----------------------");
 	
 	[super dealloc];
+}
+
+-(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName
+{
+	// Create a FileManager object
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	// Get the path to the database in the application package
+	NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:databaseName];
+	// Check if the database already exists then remove it
+	BOOL success = [fileManager fileExistsAtPath:databasePath];
+	if (success) 
+		[fileManager removeItemAtPath:databasePath error:nil];
+	// Copy the database from the package to the users filesystem
+	[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
+	[fileManager release];
 }
 
 -(void) connectToServer
@@ -60,8 +77,39 @@
 	[inputStream open];
 	[outputStream open];
 	
-	DELIMETER = [[NSString alloc] initWithString:@"\r\n"];
+	DELIMETER = [NSString stringWithString:@"\r\n"];
+	
+	NSString *databaseName = @"gameDB.sqlite";
+	NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDir = [documentPaths objectAtIndex:0];
+	NSString *databasePath = [documentsDir stringByAppendingPathComponent:databaseName];
+	
+	[self copyDatabaseToDocuments:databasePath named:databaseName];
+	
+	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
+		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+	
 	[self sendToServer:[@"U|" stringByAppendingString:[[UIDevice currentDevice] uniqueIdentifier]]];
+}
+
+-(void) dbGetCharacter:(int)cid
+{
+	// Setup the SQL Statement and compile it for faster access
+	NSString *sqlStatement = [NSString stringWithFormat:@"SELECT * FROM character where id=%d", cid];
+	sqlite3_stmt *compiledStatement;
+	if(sqlite3_prepare_v2(database, [sqlStatement UTF8String], -1, &compiledStatement, NULL) == SQLITE_OK)
+	{
+		// Loop through the results and add them to the feeds array
+		while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
+			// Read the data from the result row
+			NSString *uname = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+			NSLog(@"----> %@", uname);
+		}
+	}
+	else
+		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+	// Release the compiled statement from memory
+	sqlite3_finalize(compiledStatement);
 }
 
 -(void) sendToServer:(NSString *)cmd
@@ -129,12 +177,14 @@
 
 -(void) __dispatch:(NSString *)msg
 {
+	id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
+	id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
+
 	NSArray *arr = [msg componentsSeparatedByString:@"|"];
 	
 	// MENU
 	if ([[arr objectAtIndex:0] isEqualToString:@"M"])
 	{
-		id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
 		NSArray *menuitems = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
 		[interface initMenu:menuitems];
 		NSLog(@"Menu: %@", [arr objectAtIndex:1]);
@@ -142,21 +192,18 @@
 	// TURN
 	else if ([[arr objectAtIndex:0] isEqualToString:@"T"])
 	{
-		id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
 		[interface setTurn:[arr objectAtIndex:1]];
 		NSLog(@"Turn: %@", [arr objectAtIndex:1]);
 	}
 	// ANIM FIGHT
 	else if ([[arr objectAtIndex:0] isEqualToString:@"A"])
 	{
-		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
 		[game playFight];
 		NSLog(@"play fight: %@", [arr objectAtIndex:1]);
 	}
 	// CHARACTER
 	else if ([[arr objectAtIndex:0] isEqualToString:@"P1"])
 	{
-		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
 		int pos = 1;
 		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
 		for (NSString *c in chrs)
@@ -168,7 +215,6 @@
 	}
 	else if ([[arr objectAtIndex:0] isEqualToString:@"P2"])
 	{
-		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
 		int pos = 1;
 		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
 		for (NSString *c in chrs)
@@ -181,7 +227,7 @@
 	// ECHO
 	else if ([[arr objectAtIndex:0] isEqualToString:@"E"])
 	{
-		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Message" message:[arr objectAtIndex:1] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Alert" message:[arr objectAtIndex:1] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
 		[alert show];
 		[alert release];
 	}
@@ -195,11 +241,11 @@
 	// the user clicked one of the OK/Cancel buttons
 	if (buttonIndex == 1)
 	{
-		NSLog(@"Ok");
+		NSLog(@"Ok on %@", [actionSheet title]);
 	}
 	else
 	{
-		NSLog(@"Cancel");
+		NSLog(@"Cancel on %@", [actionSheet title]);
 	}
 }
 

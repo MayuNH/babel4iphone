@@ -137,7 +137,7 @@ if __name__ == "__main__":
     # questo codice permette di creare un db solo delle info dei character per il client
     import os
     
-    fname = "../Babel/Resources/gameDB.sqlite"
+    fname = "../Babel/gameDB.sqlite"
     try:
         os.remove(fname)
         print "Rimosso il vecchio database client."
