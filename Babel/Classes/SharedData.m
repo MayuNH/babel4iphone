@@ -19,8 +19,9 @@
 #import "SharedData.h"
 #import "CCDirector.h"
 
-#define HOST "127.0.0.1"
-#define PORT 66666
+#define DATABASE	"gameDB.sqlite"
+#define HOST		"127.0.0.1"
+#define PORT		66666
 
 @implementation SharedData
 
@@ -52,6 +53,40 @@
 	[fileManager release];
 }
 
+-(void) connectToDatabase
+{
+	NSString *databaseName = [NSString stringWithFormat:@"%s", DATABASE];
+	NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	NSString *documentsDir = [documentPaths objectAtIndex:0];
+	NSString *databasePath = [documentsDir stringByAppendingPathComponent:databaseName];
+	
+	[self copyDatabaseToDocuments:databasePath named:databaseName];
+	
+	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
+		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+}
+
+-(void) dbGetCharacter:(int)cid
+{
+	// Setup the SQL Statement and compile it for faster access
+	NSString *sqlStatement = [NSString stringWithFormat:@"SELECT * FROM character where id=%d", cid];
+	sqlite3_stmt *compiledStatement;
+	if (sqlite3_prepare_v2(database, [sqlStatement UTF8String], -1, &compiledStatement, NULL) == SQLITE_OK)
+	{
+		// Loop through the results and add them to the feeds array
+		while (sqlite3_step(compiledStatement) == SQLITE_ROW)
+		{
+			// Read the data from the result row
+			NSString *uname = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
+			NSLog(@"----> %@", uname);
+		}
+	}
+	else
+		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+	// Release the compiled statement from memory
+	sqlite3_finalize(compiledStatement);
+}
+
 -(void) connectToServer
 {
 	CFHostRef host;
@@ -77,39 +112,8 @@
 	[inputStream open];
 	[outputStream open];
 	
-	DELIMETER = [NSString stringWithString:@"\r\n"];
-	
-	NSString *databaseName = @"gameDB.sqlite";
-	NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	NSString *documentsDir = [documentPaths objectAtIndex:0];
-	NSString *databasePath = [documentsDir stringByAppendingPathComponent:databaseName];
-	
-	[self copyDatabaseToDocuments:databasePath named:databaseName];
-	
-	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
-		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
-	
-	[self sendToServer:[@"U|" stringByAppendingString:[[UIDevice currentDevice] uniqueIdentifier]]];
-}
-
--(void) dbGetCharacter:(int)cid
-{
-	// Setup the SQL Statement and compile it for faster access
-	NSString *sqlStatement = [NSString stringWithFormat:@"SELECT * FROM character where id=%d", cid];
-	sqlite3_stmt *compiledStatement;
-	if(sqlite3_prepare_v2(database, [sqlStatement UTF8String], -1, &compiledStatement, NULL) == SQLITE_OK)
-	{
-		// Loop through the results and add them to the feeds array
-		while(sqlite3_step(compiledStatement) == SQLITE_ROW) {
-			// Read the data from the result row
-			NSString *uname = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
-			NSLog(@"----> %@", uname);
-		}
-	}
-	else
-		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
-	// Release the compiled statement from memory
-	sqlite3_finalize(compiledStatement);
+	DELIMETER = @"\r\n";
+	[self sendToServer:[NSString stringWithFormat:@"U|%@", [[UIDevice currentDevice] uniqueIdentifier]]];
 }
 
 -(void) sendToServer:(NSString *)cmd
@@ -121,8 +125,10 @@
 -(void) stream:(NSStream *)stream handleEvent:(NSStreamEvent)streamEvent
 {
 	NSString *io;
-	if (stream == inputStream) io = @"[SERVER]";
-	else io = @"[CLIENT]";
+	if (stream == inputStream)
+		io = @"[SERVER]";
+	else
+		io = @"[CLIENT]";
 	
 	NSString *event;
 	switch (streamEvent)
@@ -179,7 +185,7 @@
 {
 	id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
 	id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
-
+	
 	NSArray *arr = [msg componentsSeparatedByString:@"|"];
 	
 	// MENU
@@ -251,7 +257,7 @@
 
 -(void) menu:(int)i
 {
-	[self sendToServer:[@"M|" stringByAppendingFormat:@"%D", i]];
+	[self sendToServer:[NSString stringWithFormat:@"M|%d", i]];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

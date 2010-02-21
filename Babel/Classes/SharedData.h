@@ -29,9 +29,8 @@
 	NSString *DELIMETER;
 }
 
-@property (nonatomic, retain) NSString *name;
-
 -(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
+-(void) connectToDatabase;
 -(void) dbGetCharacter:(int)cid;
 
 -(void) connectToServer;

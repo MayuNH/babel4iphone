@@ -38,7 +38,7 @@
 -(void) addMyCharacter:(NSArray *)attr position:(int)p
 {
 	[[SharedData Initialize] dbGetCharacter:[[attr objectAtIndex:1] intValue]];
-	NSString *fname = [[NSString stringWithFormat:@"%@", [attr objectAtIndex:1]] stringByAppendingString:@".png"];
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.anchorPoint = CGPointZero;
@@ -49,7 +49,7 @@
 -(void) addEnemyCharacter:(NSArray *)attr position:(int)p
 {
 	[[SharedData Initialize] dbGetCharacter:[[attr objectAtIndex:1] intValue]];
-	NSString *fname = [[NSString stringWithFormat:@"%@", [attr objectAtIndex:1]] stringByAppendingString:@".png"];
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.scaleX = -0.4;
