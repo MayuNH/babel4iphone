@@ -146,11 +146,11 @@ if __name__ == "__main__":
     
     s = Database()
     d = Database(fname)
-   
-    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
+    print "Creato nuovo database client."
     
+    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
     if d.execute(sql):
-        print "Creato nuovo database client."
+        print "Creata tabella character."
         
         check = False
         for r in s.select("*", "character"):
@@ -160,11 +160,47 @@ if __name__ == "__main__":
             if not d.insert("character", r):
                 check = True
         
-        # stampa del nuovo db
         print "Database client popolato con le entry..."
         for r in d.select("*", "character"):
             print r
         if check:
             print "ERRORE: Alcuni character possono non essere stati inseriti!!!"
     else:
-        print "Impossibile creare nuovo database client."
+        print "Impossibile creare tabella character."
+    
+    sql = 'CREATE TABLE "type" ("id" VARCHAR(25) PRIMARY KEY  NOT NULL ,"hp" CHAR,"mp" CHAR,"str" CHAR,"dex" CHAR,"vit" CHAR,"agi" CHAR,"int" CHAR,"mnd" CHAR)'
+    if d.execute(sql):
+        print "Creata tabella type."
+        
+        check = False
+        for r in s.select("*", "type"):
+            for k in r.keys():
+                r[k] = "'%s'" % r[k]
+            if not d.insert("type", r):
+                check = True
+        
+        print "Database client popolato con le entry..."
+        for r in d.select("*", "type"):
+            print r
+        if check:
+            print "ERRORE: Alcuni type possono non essere stati inseriti!!!"
+    else:
+        print "Impossibile creare tabella type."
+    
+    sql = 'CREATE TABLE "scale" ("id" CHAR PRIMARY KEY  NOT NULL ,"scaleHP" REAL DEFAULT 0 ,"baseHP" REAL DEFAULT 0 ,"scaleMP" REAL DEFAULT 0 ,"baseMP" REAL DEFAULT 0 ,"scaleSTATS" REAL DEFAULT 0 ,"baseSTATS" REAL DEFAULT 0 )'    
+    if d.execute(sql):
+        print "Creata tabella scale."
+        
+        check = False
+        for r in s.select("*", "scale"):
+            r["id"] = "'%s'" % r["id"]
+            if not d.insert("scale", r):
+                check = True
+        
+        print "Database client popolato con le entry..."
+        for r in d.select("*", "scale"):
+            print r
+        if check:
+            print "ERRORE: Alcuni scale possono non essere stati inseriti!!!"
+    else:
+        print "Impossibile creare tabella scale."
