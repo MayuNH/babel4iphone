@@ -146,16 +146,17 @@ if __name__ == "__main__":
     
     s = Database()
     d = Database(fname)
-    
-    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(50) NOT NULL ,"race" VARCHAR(50) NOT NULL ,"atk" INTEGER DEFAULT 0 ,"def" INTEGER DEFAULT 0 ,"matk" INTEGER DEFAULT 0 ,"mdef" INTEGER DEFAULT 0 )'
+   
+    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
     
     if d.execute(sql):
         print "Creato nuovo database client."
         
         check = False
         for r in s.select("*", "character"):
-            r["race"] = "'%s'" % r["race"]
             r["name"] = "'%s'" % r["name"]
+            r["race_id"] = "'%s'" % r["race_id"]
+            r["job_id"] = "'%s'" % r["job_id"].replace("None", "")
             if not d.insert("character", r):
                 check = True
         

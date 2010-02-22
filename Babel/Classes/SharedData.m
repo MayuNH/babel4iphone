@@ -46,10 +46,23 @@
 	NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:databaseName];
 	// Check if the database already exists then remove it
 	BOOL success = [fileManager fileExistsAtPath:databasePath];
-	if (success) 
-		[fileManager removeItemAtPath:databasePath error:nil];
-	// Copy the database from the package to the users filesystem
-	[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
+	if (success)
+	{
+		if ([fileManager contentsEqualAtPath:databasePathFromApp andPath:databasePath] == YES)
+			NSLog(@"SQLITE Same database");
+		else
+		{
+			[fileManager removeItemAtPath:databasePath error:nil];
+			success = FALSE;
+			NSLog(@"SQLITE Remove database");
+		}
+	}
+	if (!success)
+	{
+		// Copy the database from the package to the users filesystem
+		[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
+		NSLog(@"SQLITE Copy new database");
+	}
 	[fileManager release];
 }
 
@@ -63,11 +76,13 @@
 	[self copyDatabaseToDocuments:databasePath named:databaseName];
 	
 	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
-		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
 }
 
--(void) dbGetCharacter:(int)cid
+-(NSArray *) dbGetCharacter:(int)cid
 {
+	NSArray *row = NULL;
+	
 	// Setup the SQL Statement and compile it for faster access
 	NSString *sqlStatement = [NSString stringWithFormat:@"SELECT * FROM character where id=%d", cid];
 	sqlite3_stmt *compiledStatement;
@@ -77,14 +92,19 @@
 		while (sqlite3_step(compiledStatement) == SQLITE_ROW)
 		{
 			// Read the data from the result row
+			NSString *uid = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
 			NSString *uname = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
-			NSLog(@"----> %@", uname);
+			NSString *urace = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
+			NSString *ujob = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
+			row = [NSArray arrayWithObjects:uid, uname, urace, ujob, nil];
 		}
 	}
 	else
-		NSAssert1(0, @"Error db. '%s'", sqlite3_errmsg(database));
+		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
 	// Release the compiled statement from memory
 	sqlite3_finalize(compiledStatement);
+	
+	return row;
 }
 
 -(void) connectToServer

@@ -31,7 +31,7 @@
 
 -(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
 -(void) connectToDatabase;
--(void) dbGetCharacter:(int)cid;
+-(NSArray *) dbGetCharacter:(int)cid;
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;

@@ -190,8 +190,8 @@
 		8800DE9B10E3FCB4005BE091 /* sr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8800DE9A10E3FCB4005BE091 /* sr.ttf */; };
 		8800DEB510E413A1005BE091 /* back.png in Resources */ = {isa = PBXBuildFile; fileRef = 8800DEB410E413A1005BE091 /* back.png */; };
 		8821F73B1110DBAB008E0FAD /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8821F73A1110DBAB008E0FAD /* CFNetwork.framework */; };
-		885941831124859E00A22194 /* 1.png in Resources */ = {isa = PBXBuildFile; fileRef = 885941811124859E00A22194 /* 1.png */; };
-		885941841124859E00A22194 /* 2.png in Resources */ = {isa = PBXBuildFile; fileRef = 885941821124859E00A22194 /* 2.png */; };
+		885941831124859E00A22194 /* Dan.png in Resources */ = {isa = PBXBuildFile; fileRef = 885941811124859E00A22194 /* Dan.png */; };
+		885941841124859E00A22194 /* Bill.png in Resources */ = {isa = PBXBuildFile; fileRef = 885941821124859E00A22194 /* Bill.png */; };
 		887E47B310C6EA9500F260C8 /* CCFileUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 887E47B210C6EA9500F260C8 /* CCFileUtils.m */; };
 		887E47FA10C6EB9E00F260C8 /* CoreFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 887E47F110C6EB9E00F260C8 /* CoreFunctions.m */; };
 		887E47FB10C6EB9E00F260C8 /* GameLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 887E47F310C6EB9E00F260C8 /* GameLayer.m */; };
@@ -413,8 +413,8 @@
 		8800DE9A10E3FCB4005BE091 /* sr.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = sr.ttf; sourceTree = "<group>"; };
 		8800DEB410E413A1005BE091 /* back.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back.png; sourceTree = "<group>"; };
 		8821F73A1110DBAB008E0FAD /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		885941811124859E00A22194 /* 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1.png; sourceTree = "<group>"; };
-		885941821124859E00A22194 /* 2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 2.png; sourceTree = "<group>"; };
+		885941811124859E00A22194 /* Dan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Dan.png; sourceTree = "<group>"; };
+		885941821124859E00A22194 /* Bill.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bill.png; sourceTree = "<group>"; };
 		887E47B110C6EA9500F260C8 /* CCFileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCFileUtils.h; sourceTree = "<group>"; };
 		887E47B210C6EA9500F260C8 /* CCFileUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCFileUtils.m; sourceTree = "<group>"; };
 		887E47F010C6EB9E00F260C8 /* CoreFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreFunctions.h; sourceTree = "<group>"; };
@@ -805,8 +805,8 @@
 			isa = PBXGroup;
 			children = (
 				88A2F2F1113069270059F006 /* gameDB.sqlite */,
-				885941811124859E00A22194 /* 1.png */,
-				885941821124859E00A22194 /* 2.png */,
+				885941811124859E00A22194 /* Dan.png */,
+				885941821124859E00A22194 /* Bill.png */,
 				88E841921120A46300F0D78B /* arena.png */,
 				889ACD0510E580AA0031E836 /* Lucon1.ttf */,
 				889ACCEF10E579A20031E836 /* Prototype.ttf */,
@@ -1002,8 +1002,8 @@
 				889ACCF010E579A20031E836 /* Prototype.ttf in Resources */,
 				889ACD0610E580AA0031E836 /* Lucon1.ttf in Resources */,
 				88E841931120A46300F0D78B /* arena.png in Resources */,
-				885941831124859E00A22194 /* 1.png in Resources */,
-				885941841124859E00A22194 /* 2.png in Resources */,
+				885941831124859E00A22194 /* Dan.png in Resources */,
+				885941841124859E00A22194 /* Bill.png in Resources */,
 				88A2F2F2113069270059F006 /* gameDB.sqlite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
