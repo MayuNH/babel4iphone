@@ -16,11 +16,17 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
-//#import "cocos2d.h"
-
-/*@interface CoreFunctions : NSObject
+@interface CoreFunctions : NSObject
 {
 
 }
 
-@end*/
++(int) scaleHP:(float)sHP baseHP:(float)bHP scaleHPxXx:(float)sHPxXx level:(int)l;
++(int) scaleHP:(float)sHP baseHP:(float)bHP scaleHPxXx:(float)sHPxXx level:(int)l job:(NSString *)j;
++(int) scaleHP:(float)sHP baseHP:(float)bHP suplevel:(int)sl supjob:(NSString *)sj;
++(int) scaleMP:(float)sMP baseMP:(float)bMP levelMP:(int)lm;
++(int) scaleMP:(float)sMP baseMP:(float)bMP levelMP:(int)lm level:(int)l job:(NSString *)j;
++(int) scaleMP:(float)sMP baseMP:(float)bMP suplevel:(int)sl supjob:(NSString *)sj;
++(int) scaleSTATS:(float)sSTATS baseSTATS:(float)bSTATS level:(int)l;
+
+@end

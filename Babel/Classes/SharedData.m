@@ -17,6 +17,7 @@
 
 
 #import "SharedData.h"
+#import "CoreFunctions.h"
 #import "CCDirector.h"
 
 #define DATABASE	"gameDB.sqlite"
@@ -104,6 +105,37 @@
 	// Release the compiled statement from memory
 	sqlite3_finalize(compiledStatement);
 	
+	int rhp = [CoreFunctions scaleHP:6 baseHP:14 scaleHPxXx:0 level:75];
+	//int jhp = [CoreFunctions scaleHP:9 baseHP:19 scaleHPxXx:1 level:75 job:@"Monk"];
+	int jhp = [CoreFunctions scaleHP:8 baseHP:17 scaleHPxXx:1 level:75 job:@"Warrior"];
+	//int sjhp = [CoreFunctions scaleHP:8 baseHP:17 suplevel:75/2 supjob:@"Warrior"];
+	int sjhp = [CoreFunctions scaleHP:9 baseHP:19 suplevel:75/2 supjob:@"Monk"];
+	int hp = rhp + jhp + sjhp;
+	
+	int mp = 0;
+	int rmp = 0;
+	int jmp = 0;
+	int sjmp = 0;
+	
+	int lm = 75; // mp_level
+	// if only supjob available
+	//lm = 75 / 2;
+	
+	rmp = [CoreFunctions scaleMP:3 baseMP:10 levelMP:lm];
+	jmp = [CoreFunctions scaleMP:5 baseMP:14 levelMP:lm level:75 job:@"BlackMage"];
+	sjmp = [CoreFunctions scaleMP:6 baseMP:16 suplevel:75/2 supjob:@"Summoner"];
+	
+	// if main available
+	mp = rmp + jmp + sjmp;
+	// if supjob available
+	//mp = (int)(rmp / 2) + sjmp;
+	
+	int rstr = [CoreFunctions scaleSTATS:0.35 baseSTATS:3 level:75];
+	int jstr = [CoreFunctions scaleSTATS:0.5 baseSTATS:5 level:75];
+	int sjstr = [CoreFunctions scaleSTATS:0.4 baseSTATS:4 level:75/2];
+	int str = rstr + jstr + (int)(sjstr / 2);
+	
+	NSLog(@"HP ---------> hp:%d mp:%d str:%d", hp, mp, str);
 	return row;
 }
 

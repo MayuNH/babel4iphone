@@ -74,6 +74,8 @@
 	[[CCDirector sharedDirector] runWithScene: scene];
 	[[SharedData Initialize] connectToDatabase];
 	[[SharedData Initialize] connectToServer];
+	
+	// test
 	[[SharedData Initialize] sendToServer:@"F|U55555"];
 }
 
