@@ -125,11 +125,9 @@ class Database(object):
         return r
     
     def getParty(self, uid):
-        r = self.select("id, char_id, level, hp, mp", 
-                        "collection", 
-                        "user_id='%s' and party=1" % uid)
-        if r:
-            r = r
+        r = self.select("char_id, name, race_id, job_id, supjob_id", 
+                        "collection, character", 
+                        "collection.char_id = character.id and user_id='%s' and party=1" % uid)
         return r
 
 

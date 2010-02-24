@@ -192,9 +192,18 @@ class Core(object):
             print "Client re-enter in arena %s|%s" % (c1.uid, uid2)
     
     def __getParty(self, u1, u2):
-        d1 = ["%s,%s,%s,%s,%s" % \
-                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u1)]
-        d2 = ["%s,%s,%s,%s,%s" % \
-                  (x["id"], x["char_id"], x["level"], x["hp"], x["mp"]) for x in self.__db.getParty(u2)]
+        d1 = ["%s,%s,%s,%s,%s" % 
+              (x["char_id"], 
+               x["name"], 
+               x["race_id"], 
+               x["job_id"], 
+               x["supjob_id"]) for x in self.__db.getParty(u1)]
+        
+        d2 = ["%s,%s,%s,%s,%s" % 
+              (x["char_id"], 
+               x["name"], 
+               x["race_id"], 
+               x["job_id"], 
+               x["supjob_id"]) for x in self.__db.getParty(u2)]
         
         return ';'.join(d1), ';'.join(d2)
