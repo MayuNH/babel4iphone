@@ -192,18 +192,32 @@ class Core(object):
             print "Client re-enter in arena %s|%s" % (c1.uid, uid2)
     
     def __getParty(self, u1, u2):
-        d1 = ["%s,%s,%s,%s,%s" % 
-              (x["char_id"], 
-               x["name"], 
-               x["race_id"], 
-               x["job_id"], 
-               x["supjob_id"]) for x in self.__db.getParty(u1)]
+        d1 = []
+        for x in self.__db.getCharacter(u1):
+            j = self.__db.getJob(x["char_id"], x["job_id"])
+            s = []
+            if j:
+                j = [j["level"], j["exp"], j["hp"], j["mp"], j["time"]]
+                s = self.__db.getJob(x["char_id"], x["supjob_id"])
+                if s:
+                    s = [s["level"], s["exp"], s["hp"], s["mp"], s["time"]]
+            chr = [x["char_id"], x["name"], x["race_id"], x["job_id"], x["supjob_id"]]
+            chr.extend(j)
+            chr.extend(s)
+            d1.append(','.join(chr))
         
-        d2 = ["%s,%s,%s,%s,%s" % 
-              (x["char_id"], 
-               x["name"], 
-               x["race_id"], 
-               x["job_id"], 
-               x["supjob_id"]) for x in self.__db.getParty(u2)]
+        d2 = []
+        for x in self.__db.getCharacter(u2):
+            j = self.__db.getJob(x["char_id"], x["job_id"])
+            s = []
+            if j:
+                j = [j["level"], j["exp"], j["hp"], j["mp"], j["time"]]
+                s = self.__db.getJob(x["char_id"], x["supjob_id"])
+                if s:
+                    s = [s["level"], s["exp"], s["hp"], s["mp"], s["time"]]
+            chr = [x["char_id"], x["name"], x["race_id"], x["job_id"], x["supjob_id"]]
+            chr.extend(j)
+            chr.extend(s)
+            d2.append(','.join(chr))
         
         return ';'.join(d1), ';'.join(d2)

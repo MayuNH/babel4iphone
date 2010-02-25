@@ -17,15 +17,12 @@
 
 
 import sys, sqlite3
-#import sys, MySQLdb
 
 class Database(object):
     
-    #def __init__(self, h = "localhost", u = "root", p = "", db = "gameDB"):
     def __init__(self, db = "gameDB.sqlite"):
         self.conn = None
         try:
-            #self.conn = MySQLdb.connect(h, u, p, db)
             self.conn = sqlite3.connect(db)
             self.conn.row_factory = sqlite3.Row
         except Exception, e:
@@ -50,13 +47,11 @@ class Database(object):
         return result
     
     def select(self, select, table, where = "'1'"):
-        #cursor = self.conn.cursor(MySQLdb.cursors.DictCursor)
         cursor = self.conn.cursor()
         sql = "SELECT %s FROM %s WHERE %s;" % (select, table, where)
         c = cursor.execute(sql)
         tmp = cursor.fetchall()
         
-        # x sqlite return dict
         result = []
         for r in tmp:
             i = 0
@@ -124,10 +119,18 @@ class Database(object):
             r = r[0]["name"]
         return r
     
-    def getParty(self, uid):
+    def getCharacter(self, uid):
         r = self.select("char_id, name, race_id, job_id, supjob_id", 
                         "collection, character", 
                         "collection.char_id = character.id and user_id='%s' and party=1" % uid)
+        return r
+    
+    def getJob(self, cid, job):
+        r = self.select("level, exp, hp, mp, time", 
+                        "job", 
+                        "char_id=%s and type_id='%s'" % (cid, job))
+        if r:
+            r = r[0]
         return r
 
 
@@ -145,6 +148,26 @@ if __name__ == "__main__":
     s = Database()
     d = Database(fname)
     print "Creato nuovo database client."
+    
+    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
+    if d.execute(sql):
+        print "Creata tabella character."
+        
+        check = False
+        for r in s.select("*", "character"):
+            r["name"] = "'%s'" % r["name"]
+            r["race_id"] = "'%s'" % r["race_id"]
+            r["job_id"] = "'%s'" % r["job_id"].replace("None", "")
+            if not d.insert("character", r):
+                check = True
+        
+        print "Database client popolato con le entry..."
+        for r in d.select("*", "character"):
+            print r
+        if check:
+            print "ERRORE: Alcuni character possono non essere stati inseriti!!!"
+    else:
+        print "Impossibile creare tabella character."
     
     sql = 'CREATE TABLE "type" ("id" VARCHAR(25) PRIMARY KEY  NOT NULL ,"hp" CHAR,"mp" CHAR,"str" CHAR,"dex" CHAR,"vit" CHAR,"agi" CHAR,"int" CHAR,"mnd" CHAR)'
     if d.execute(sql):

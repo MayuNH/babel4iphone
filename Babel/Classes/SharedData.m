@@ -80,6 +80,7 @@
 		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
 }
 
+// non serve +
 -(NSArray *) dbGetCharacter:(int)cid
 {
 	NSArray *row = NULL;
