@@ -16,9 +16,9 @@
 # along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from utils import *
 from db import Database
 from client import Client
-from utils import *
 import time
 
 class Core(object):
@@ -192,32 +192,22 @@ class Core(object):
             print "Client re-enter in arena %s|%s" % (c1.uid, uid2)
     
     def __getParty(self, u1, u2):
-        d1 = []
-        for x in self.__db.getCharacter(u1):
-            j = self.__db.getJob(x["char_id"], x["job_id"])
-            s = []
+        p1 = []
+        for c in self.__db.getCharacter(u1):
+            j = self.__db.getJob(c[0], c[3])
+            c.extend(j)
             if j:
-                j = [j["level"], j["exp"], j["hp"], j["mp"], j["time"]]
-                s = self.__db.getJob(x["char_id"], x["supjob_id"])
-                if s:
-                    s = [s["level"], s["exp"], s["hp"], s["mp"], s["time"]]
-            chr = [x["char_id"], x["name"], x["race_id"], x["job_id"], x["supjob_id"]]
-            chr.extend(j)
-            chr.extend(s)
-            d1.append(','.join(chr))
+                s = self.__db.getJob(c[0], c[4])
+                c.extend(s)
+            p1.append(','.join(c))
         
-        d2 = []
-        for x in self.__db.getCharacter(u2):
-            j = self.__db.getJob(x["char_id"], x["job_id"])
-            s = []
+        p2 = []
+        for c in self.__db.getCharacter(u2):
+            j = self.__db.getJob(c[0], c[3])
+            c.extend(j)
             if j:
-                j = [j["level"], j["exp"], j["hp"], j["mp"], j["time"]]
-                s = self.__db.getJob(x["char_id"], x["supjob_id"])
-                if s:
-                    s = [s["level"], s["exp"], s["hp"], s["mp"], s["time"]]
-            chr = [x["char_id"], x["name"], x["race_id"], x["job_id"], x["supjob_id"]]
-            chr.extend(j)
-            chr.extend(s)
-            d2.append(','.join(chr))
+                s = self.__db.getJob(c[0], c[4])
+                c.extend(s)
+            p2.append(','.join(c))
         
-        return ';'.join(d1), ';'.join(d2)
+        return ';'.join(p1), ';'.join(p2)

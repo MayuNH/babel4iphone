@@ -18,13 +18,18 @@
 
 import sys, sqlite3
 
+def list_factory(cursor, row):
+    return [str(c) for c in row]
+
+
 class Database(object):
     
     def __init__(self, db = "gameDB.sqlite"):
         self.conn = None
         try:
             self.conn = sqlite3.connect(db)
-            self.conn.row_factory = sqlite3.Row
+            #self.conn.row_factory = sqlite3.Row # for dict
+            self.conn.row_factory = list_factory
         except Exception, e:
             print e
             self.close()
@@ -50,24 +55,7 @@ class Database(object):
         cursor = self.conn.cursor()
         sql = "SELECT %s FROM %s WHERE %s;" % (select, table, where)
         c = cursor.execute(sql)
-        tmp = cursor.fetchall()
-        
-        result = []
-        for r in tmp:
-            i = 0
-            row = {}
-            
-            col = []
-            try:
-                col = cursor.keys()
-            except:
-                col = [c[0] for c in cursor.description]
-            
-            for k in col:
-                row.update({k: str(r[i])})
-                i += 1
-            result.append(row)
-        return result
+        return cursor.fetchall()
     
     def insert(self, table, fields):
         result = True
@@ -116,7 +104,7 @@ class Database(object):
     def getNameByUid(self, uid):
         r = self.select("name", "user", "id='%s'" % uid)
         if r:
-            r = r[0]["name"]
+            r = r[0][0]
         return r
     
     def getCharacter(self, uid):
@@ -135,73 +123,16 @@ class Database(object):
 
 
 if __name__ == "__main__":
-    # questo codice permette di creare un db solo delle info dei character per il client
-    import os
+    d = Database()
+    print d.getNameByUid("U55555")
     
-    fname = "../Babel/gameDB.sqlite"
-    try:
-        os.remove(fname)
-        print "Rimosso il vecchio database client."
-    except:
-        print "Il database client non esiste."
+    p1 = []
+    for c in d.getCharacter("U66666"):
+        j = d.getJob(c[0], c[3])
+        c.extend(j)
+        if j:
+            s = d.getJob(c[0], c[4])
+            c.extend(s)
+        p1.append(','.join(c))
     
-    s = Database()
-    d = Database(fname)
-    print "Creato nuovo database client."
-    
-    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
-    if d.execute(sql):
-        print "Creata tabella character."
-        
-        check = False
-        for r in s.select("*", "character"):
-            r["name"] = "'%s'" % r["name"]
-            r["race_id"] = "'%s'" % r["race_id"]
-            r["job_id"] = "'%s'" % r["job_id"].replace("None", "")
-            if not d.insert("character", r):
-                check = True
-        
-        print "Database client popolato con le entry..."
-        for r in d.select("*", "character"):
-            print r
-        if check:
-            print "ERRORE: Alcuni character possono non essere stati inseriti!!!"
-    else:
-        print "Impossibile creare tabella character."
-    
-    sql = 'CREATE TABLE "type" ("id" VARCHAR(25) PRIMARY KEY  NOT NULL ,"hp" CHAR,"mp" CHAR,"str" CHAR,"dex" CHAR,"vit" CHAR,"agi" CHAR,"int" CHAR,"mnd" CHAR)'
-    if d.execute(sql):
-        print "Creata tabella type."
-        
-        check = False
-        for r in s.select("*", "type"):
-            for k in r.keys():
-                r[k] = "'%s'" % r[k]
-            if not d.insert("type", r):
-                check = True
-        
-        print "Database client popolato con le entry..."
-        for r in d.select("*", "type"):
-            print r
-        if check:
-            print "ERRORE: Alcuni type possono non essere stati inseriti!!!"
-    else:
-        print "Impossibile creare tabella type."
-    
-    sql = 'CREATE TABLE "scale" ("id" CHAR PRIMARY KEY  NOT NULL ,"scaleHP" REAL DEFAULT 0 ,"baseHP" REAL DEFAULT 0 ,"scaleHPXXX" REAL DEFAULT 0 ,"scaleMP" REAL DEFAULT 0 ,"baseMP" REAL DEFAULT 0 ,"scaleSTATS" REAL DEFAULT 0 ,"baseSTATS" REAL DEFAULT 0 )'
-    if d.execute(sql):
-        print "Creata tabella scale."
-        
-        check = False
-        for r in s.select("*", "scale"):
-            r["id"] = "'%s'" % r["id"]
-            if not d.insert("scale", r):
-                check = True
-        
-        print "Database client popolato con le entry..."
-        for r in d.select("*", "scale"):
-            print r
-        if check:
-            print "ERRORE: Alcuni scale possono non essere stati inseriti!!!"
-    else:
-        print "Impossibile creare tabella scale."
+    print ';'.join(p1)
