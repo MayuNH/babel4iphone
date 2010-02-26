@@ -33,34 +33,13 @@ if __name__ == "__main__":
     d = Database(fname)
     print "Creato nuovo database client."
     
-    sql = 'CREATE TABLE "character" ("id" INTEGER PRIMARY KEY  NOT NULL ,"name" VARCHAR(25) NOT NULL ,"race_id" VARCHAR(25) NOT NULL ,"job_id" VARCHAR(25))'
-    if d.execute(sql):
-        print "Creata tabella character."
-        
-        check = False
-        for r in s.select("*", "character"):
-            r["name"] = "'%s'" % r["name"]
-            r["race_id"] = "'%s'" % r["race_id"]
-            r["job_id"] = "'%s'" % r["job_id"].replace("None", "")
-            if not d.insert("character", r):
-                check = True
-        
-        print "Database client popolato con le entry..."
-        for r in d.select("*", "character"):
-            print r
-        if check:
-            print "ERRORE: Alcuni character possono non essere stati inseriti!!!"
-    else:
-        print "Impossibile creare tabella character."
-    
     sql = 'CREATE TABLE "type" ("id" VARCHAR(25) PRIMARY KEY  NOT NULL ,"hp" CHAR,"mp" CHAR,"str" CHAR,"dex" CHAR,"vit" CHAR,"agi" CHAR,"int" CHAR,"mnd" CHAR)'
     if d.execute(sql):
         print "Creata tabella type."
         
         check = False
         for r in s.select("*", "type"):
-            for k in r.keys():
-                r[k] = "'%s'" % r[k]
+            r = ["'%s'" % v for v in r]
             if not d.insert("type", r):
                 check = True
         
@@ -78,7 +57,7 @@ if __name__ == "__main__":
         
         check = False
         for r in s.select("*", "scale"):
-            r["id"] = "'%s'" % r["id"]
+            r[0] = "'%s'" % r[0]
             if not d.insert("scale", r):
                 check = True
         

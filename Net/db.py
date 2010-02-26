@@ -57,13 +57,11 @@ class Database(object):
         c = cursor.execute(sql)
         return cursor.fetchall()
     
-    def insert(self, table, fields):
+    def insert(self, table, values):
         result = True
         try:
             cursor = self.conn.cursor()
-            keys = fields.keys()
-            values = fields.values()
-            sql = "INSERT INTO %s (%s) VALUES (%s);" % (table, ','.join(keys), ','.join(values))
+            sql = "INSERT INTO %s VALUES (%s);" % (table, ','.join(values))
             cursor.execute(sql)
             self.conn.commit()
         except Exception, e:
