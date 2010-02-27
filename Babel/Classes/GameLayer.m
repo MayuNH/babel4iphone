@@ -35,21 +35,21 @@
 	return self;
 }
 
--(void) addMyCharacter:(NSArray *)attr position:(int)p
+-(void) addMyCharacter:(NSArray *)baseInfo position:(int)p
 {
-	int level = 0;
 	int suplevel = 0;
-	if ([attr count] > 5)
-		level = [[attr objectAtIndex:5] intValue];
-	if ([attr count] > 10)
-		suplevel = [[attr objectAtIndex:10] intValue];
-	NSArray *info = [[SharedData Initialize] getCharInfo:[attr objectAtIndex:2] 
-													 job:[attr objectAtIndex:3] 
-												   level:level 
-												  supjob:[attr objectAtIndex:4] 
-												suplevel:suplevel];
-	//NSLog(@"---> %@", attr);
-	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
+	if ([baseInfo count] > 10)
+		suplevel = [[baseInfo objectAtIndex:10] intValue];
+	NSMutableArray *info = [[SharedData Initialize] getCharInfo:[baseInfo objectAtIndex:2] 
+															job:[baseInfo objectAtIndex:3] 
+														  level:[[baseInfo objectAtIndex:5] intValue]
+														 supjob:[baseInfo objectAtIndex:4] 
+													   suplevel:suplevel];
+	
+	NSLog(@"---> %@", baseInfo);
+	NSLog(@"---> %@", info);
+	
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [baseInfo objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.anchorPoint = CGPointZero;
@@ -57,21 +57,21 @@
 	[self addChild:sprite z:p tag:10+p];
 }
 
--(void) addEnemyCharacter:(NSArray *)attr position:(int)p
+-(void) addEnemyCharacter:(NSArray *)baseInfo position:(int)p
 {
-	int level = 0;
 	int suplevel = 0;
-	if ([attr count] > 5)
-		level = [[attr objectAtIndex:5] intValue];
-	if ([attr count] > 10)
-		suplevel = [[attr objectAtIndex:10] intValue];
-	NSArray *info = [[SharedData Initialize] getCharInfo:[attr objectAtIndex:2] 
-													 job:[attr objectAtIndex:3] 
-												   level:level 
-												  supjob:[attr objectAtIndex:4] 
-												suplevel:suplevel];
-	//NSLog(@"---> %@", attr);
-	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
+	if ([baseInfo count] > 10)
+		suplevel = [[baseInfo objectAtIndex:10] intValue];
+	NSMutableArray *info = [[SharedData Initialize] getCharInfo:[baseInfo objectAtIndex:2] 
+															job:[baseInfo objectAtIndex:3] 
+														  level:[[baseInfo objectAtIndex:5] intValue]
+														 supjob:[baseInfo objectAtIndex:4] 
+													   suplevel:suplevel];
+	
+	NSLog(@"---> %@", baseInfo);
+	NSLog(@"---> %@", info);
+	
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [baseInfo objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.scaleX = -0.4;

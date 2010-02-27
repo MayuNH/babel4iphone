@@ -57,9 +57,8 @@
 		[controller setPosition:CGPointZero];
 		[controller setVisible:NO];
 		
-		CGSize s = [[CCDirector sharedDirector] winSize];
-		CCLabel *lturn = [CCLabel labelWithString:@"" dimensions:CGSizeMake(s.width, 44) alignment:UITextAlignmentCenter fontName:@"Lucon1" fontSize:18];
-		[lturn setPosition:ccp(s.width/2, s.height/2+60)];
+		CCLabel *lturn = [CCLabel labelWithString:@"" dimensions:CGSizeMake(480, 44) alignment:UITextAlignmentCenter fontName:@"Lucon1" fontSize:18];
+		[lturn setPosition:ccp(240, 220)];
 		id seq = [CCSequence actions:[CCFadeOut actionWithDuration:0.5], [CCFadeIn actionWithDuration:0.5], nil];
 		[lturn runAction:[CCRepeatForever actionWithAction:seq]];
 		
@@ -195,7 +194,6 @@
 {
 	if (turn)
 	{
-		[[SharedData Initialize] menu:sel];
 		[self closeMenu];
 	}
 }

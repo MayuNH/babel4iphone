@@ -29,16 +29,14 @@
 	NSString *DELIMETER;
 }
 
--(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
+-(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
 -(void) connectToDatabase;
--(NSMutableArray *)execQuery:(NSString *)sqlStatement;
--(NSArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
+-(NSMutableArray *) execQuery:(NSString *)sqlStatement;
+-(NSMutableArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;
 -(void) __dispatch:(NSString *)msg;
-
--(void) menu:(int)i;
 
 +(SharedData *) Initialize;
 

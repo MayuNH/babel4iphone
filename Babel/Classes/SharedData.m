@@ -28,18 +28,18 @@
 
 -(void) dealloc
 {	
-	sqlite3_close(database);
-	
 	[inputStream release];
 	[outputStream release];
 	[DELIMETER release];
+	
+	sqlite3_close(database);
 	
 	NSLog(@"------------------- RELEASE SINGETON DATA ----------------------");
 	
 	[super dealloc];
 }
 
--(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName
+-(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName
 {
 	// Create a FileManager object
 	NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -74,13 +74,13 @@
 	NSString *documentsDir = [documentPaths objectAtIndex:0];
 	NSString *databasePath = [documentsDir stringByAppendingPathComponent:databaseName];
 	
-	[self copyDatabaseToDocuments:databasePath named:databaseName];
+	[self __copyDatabaseToDocuments:databasePath named:databaseName];
 	
 	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
 		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
 }
 
--(NSMutableArray *)execQuery:(NSString *)sqlStatement
+-(NSMutableArray *) execQuery:(NSString *)sqlStatement
 {
 	NSMutableArray *result = [NSMutableArray array];
 	
@@ -108,9 +108,9 @@
 	return result;
 }
 
--(NSArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel
+-(NSMutableArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel
 {
-	NSArray *row = NULL;
+	NSMutableArray *row = [NSMutableArray array];
 	
 	int sl = level / 2;
 	if (sl < 1) sl = 1;
@@ -121,10 +121,6 @@
 	NSMutableArray *infoSUPJOB = NULL;
 	if (![supjob isEqualToString:@"None"])
 		infoSUPJOB = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM type where id='%@'", supjob]];
-	
-	NSLog(@"----> race %@", infoRACE);
-	NSLog(@"----> job %@", infoJOB);
-	NSLog(@"----> supjob %@", infoSUPJOB);
 	
 	NSMutableArray *infoRHP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoRACE objectAtIndex:1]]];
 	int rhp = [CoreFunctions scaleHP:[[infoRHP objectAtIndex:1] floatValue] 
@@ -149,7 +145,8 @@
 							   supjob:[infoSUPJOB objectAtIndex:0]];
 	}
 	
-	NSLog(@"HP ----> %d level %d", rhp + jhp + sjhp, level);
+	// HP
+	[row addObject:[NSNumber numberWithInteger:rhp + jhp + sjhp]];
 	
 	BOOL mp_not_available_job = [[infoJOB objectAtIndex:2] isEqualToString:@"X"];
 	BOOL mp_not_available_supjob = YES;
@@ -196,16 +193,35 @@
 	else if (!mp_not_available_supjob)
 		mp = (int)(rmp / 2) + sjmp;
 	
-	NSLog(@"-----> Level MP %d ---- %d", lm, mp);
+	// MP
+	[row addObject:[NSNumber numberWithInteger:mp]];
 	
-	return row;
+	for (int a = 3; a < 9; a++)
+	{
+		NSMutableArray *statsRACE = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoRACE objectAtIndex:a]]];
+		int star = [CoreFunctions scaleSTATS:[[statsRACE objectAtIndex:6] floatValue] 
+								   baseSTATS:[[statsRACE objectAtIndex:7] floatValue]  
+									   level:level];
+		
+		NSMutableArray *statsJOB = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoJOB objectAtIndex:a]]];
+		int staj = [CoreFunctions scaleSTATS:[[statsJOB objectAtIndex:6] floatValue] 
+								   baseSTATS:[[statsJOB objectAtIndex:7] floatValue]  
+									   level:level];
+		
+		int stasj = 0;
+		if (infoSUPJOB)
+		{
+			NSMutableArray *statsSUPJOB = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoSUPJOB objectAtIndex:a]]];
+			stasj = [CoreFunctions scaleSTATS:[[statsSUPJOB objectAtIndex:6] floatValue] 
+									baseSTATS:[[statsSUPJOB objectAtIndex:7] floatValue]  
+										level:sl];
+		}
+		int statsA = star + staj + (int)(stasj / 2);
+		
+		// STATS
+		[row addObject:[NSNumber numberWithInteger:statsA]];
+	}
 	
-	int rstr = [CoreFunctions scaleSTATS:0.35 baseSTATS:3 level:75];
-	int jstr = [CoreFunctions scaleSTATS:0.5 baseSTATS:5 level:75];
-	int sjstr = [CoreFunctions scaleSTATS:0.4 baseSTATS:4 level:75/2];
-	int str = rstr + jstr + (int)(sjstr / 2);
-	
-	//NSLog(@"HP ---------> hp:%d mp:%d str:%d", hp, mp, str);
 	return row;
 }
 
@@ -336,8 +352,8 @@
 		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
 		for (NSString *c in chrs)
 		{
-			NSArray *attr = [c componentsSeparatedByString:@","];
-			[game addMyCharacter:attr position:pos];
+			NSArray *info = [c componentsSeparatedByString:@","];
+			[game addMyCharacter:info position:pos];
 			pos = pos + 1;
 		}
 	}
@@ -347,8 +363,8 @@
 		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
 		for (NSString *c in chrs)
 		{
-			NSArray *attr = [c componentsSeparatedByString:@","];
-			[game addEnemyCharacter:attr position:pos];
+			NSArray *info = [c componentsSeparatedByString:@","];
+			[game addEnemyCharacter:info position:pos];
 			pos = pos + 1;
 		}
 	}
@@ -375,11 +391,6 @@
 	{
 		NSLog(@"Cancel on %@", [actionSheet title]);
 	}
-}
-
--(void) menu:(int)i
-{
-	[self sendToServer:[NSString stringWithFormat:@"M|%d", i]];
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

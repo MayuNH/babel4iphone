@@ -23,8 +23,8 @@
 
 }
 
--(void) addMyCharacter:(NSArray *)attr position:(int)p;
--(void) addEnemyCharacter:(NSArray *)attr position:(int)p;
+-(void) addMyCharacter:(NSArray *)baseInfo position:(int)p;
+-(void) addEnemyCharacter:(NSArray *)baseInfo position:(int)p;
 -(void) playFight;
 
 @end
