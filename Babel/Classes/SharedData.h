@@ -31,7 +31,8 @@
 
 -(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
 -(void) connectToDatabase;
--(NSArray *) dbGetCharacter:(int)cid;
+-(NSMutableArray *)execQuery:(NSString *)sqlStatement;
+-(NSArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;

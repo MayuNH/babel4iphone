@@ -80,25 +80,24 @@
 		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
 }
 
-// non serve +
--(NSArray *) dbGetCharacter:(int)cid
+-(NSMutableArray *)execQuery:(NSString *)sqlStatement
 {
-	NSArray *row = NULL;
+	NSMutableArray *result = [NSMutableArray array];
 	
 	// Setup the SQL Statement and compile it for faster access
-	NSString *sqlStatement = [NSString stringWithFormat:@"SELECT * FROM character where id=%d", cid];
 	sqlite3_stmt *compiledStatement;
 	if (sqlite3_prepare_v2(database, [sqlStatement UTF8String], -1, &compiledStatement, NULL) == SQLITE_OK)
 	{
 		// Loop through the results and add them to the feeds array
 		while (sqlite3_step(compiledStatement) == SQLITE_ROW)
 		{
-			// Read the data from the result row
-			NSString *uid = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 0)];
-			NSString *uname = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 1)];
-			NSString *urace = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 2)];
-			NSString *ujob = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, 3)];
-			row = [NSArray arrayWithObjects:uid, uname, urace, ujob, nil];
+			int cols = sqlite3_column_count(compiledStatement);
+			for (int i = 0; i < cols; i++)
+			{
+				// Read the data from the result row
+				NSString *tmp = [NSString stringWithUTF8String:(char *)sqlite3_column_text(compiledStatement, i)];
+				[result addObject:tmp];
+			}
 		}
 	}
 	else
@@ -106,37 +105,107 @@
 	// Release the compiled statement from memory
 	sqlite3_finalize(compiledStatement);
 	
-	int rhp = [CoreFunctions scaleHP:6 baseHP:14 scaleHPxXx:0 level:75];
-	//int jhp = [CoreFunctions scaleHP:9 baseHP:19 scaleHPxXx:1 level:75 job:@"Monk"];
-	int jhp = [CoreFunctions scaleHP:8 baseHP:17 scaleHPxXx:1 level:75 job:@"Warrior"];
-	//int sjhp = [CoreFunctions scaleHP:8 baseHP:17 suplevel:75/2 supjob:@"Warrior"];
-	int sjhp = [CoreFunctions scaleHP:9 baseHP:19 suplevel:75/2 supjob:@"Monk"];
-	int hp = rhp + jhp + sjhp;
+	return result;
+}
+
+-(NSArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel
+{
+	NSArray *row = NULL;
+	
+	int sl = level / 2;
+	if (sl < 1) sl = 1;
+	if (sl > suplevel) sl = suplevel;
+	
+	NSMutableArray *infoRACE = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM type where id='%@'", race]];
+	NSMutableArray *infoJOB = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM type where id='%@'", job]];
+	NSMutableArray *infoSUPJOB = NULL;
+	if (![supjob isEqualToString:@"None"])
+		infoSUPJOB = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM type where id='%@'", supjob]];
+	
+	NSLog(@"----> race %@", infoRACE);
+	NSLog(@"----> job %@", infoJOB);
+	NSLog(@"----> supjob %@", infoSUPJOB);
+	
+	NSMutableArray *infoRHP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoRACE objectAtIndex:1]]];
+	int rhp = [CoreFunctions scaleHP:[[infoRHP objectAtIndex:1] floatValue] 
+							  baseHP:[[infoRHP objectAtIndex:2] floatValue] 
+						  scaleHPxXx:[[infoRHP objectAtIndex:3] floatValue] 
+							   level:level];
+	
+	NSMutableArray *infoJHP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoJOB objectAtIndex:1]]];
+	int jhp = [CoreFunctions scaleHP:[[infoJHP objectAtIndex:1] floatValue] 
+							  baseHP:[[infoJHP objectAtIndex:2] floatValue] 
+						  scaleHPxXx:[[infoJHP objectAtIndex:3] floatValue] 
+							   level:level
+								 job:[infoJOB objectAtIndex:0]];
+	
+	int sjhp = 0;
+	if (infoSUPJOB)
+	{
+		NSMutableArray *infoSJHP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoSUPJOB objectAtIndex:1]]];
+		sjhp = [CoreFunctions scaleHP:[[infoSJHP objectAtIndex:1] floatValue] 
+							   baseHP:[[infoSJHP objectAtIndex:2] floatValue] 
+							 suplevel:sl
+							   supjob:[infoSUPJOB objectAtIndex:0]];
+	}
+	
+	NSLog(@"HP ----> %d level %d", rhp + jhp + sjhp, level);
+	
+	BOOL mp_not_available_job = [[infoJOB objectAtIndex:2] isEqualToString:@"X"];
+	BOOL mp_not_available_supjob = YES;
+	if (infoSUPJOB)
+		mp_not_available_supjob = [[infoSUPJOB objectAtIndex:2] isEqualToString:@"X"];
+	
+	int lm = level;
+	if (mp_not_available_job)
+		lm = sl;
+	
+	int rmp = 0;
+	if (!mp_not_available_job || !mp_not_available_supjob)
+	{
+		NSMutableArray *infoRMP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoRACE objectAtIndex:2]]];
+		rmp = [CoreFunctions scaleMP:[[infoRMP objectAtIndex:4] floatValue] 
+							  baseMP:[[infoRMP objectAtIndex:5] floatValue]  
+							 levelMP:lm];
+	}
+	
+	int jmp = 0;
+	if (!mp_not_available_job)
+	{
+		NSMutableArray *infoJMP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoJOB objectAtIndex:2]]];
+		jmp = [CoreFunctions scaleMP:[[infoJMP objectAtIndex:4] floatValue] 
+							  baseMP:[[infoJMP objectAtIndex:5] floatValue]  
+							 levelMP:lm
+							   level:level
+								 job:[infoJOB objectAtIndex:0]];
+	}
+	
+	int sjmp = 0;
+	if (!mp_not_available_supjob)
+	{
+		NSMutableArray *infoSJMP = [self execQuery:[NSString stringWithFormat:@"SELECT * FROM scale where id='%@'", [infoSUPJOB objectAtIndex:2]]];
+		sjmp = [CoreFunctions scaleMP:[[infoSJMP objectAtIndex:4] floatValue] 
+							   baseMP:[[infoSJMP objectAtIndex:5] floatValue]  
+							 suplevel:sl
+							   supjob:[infoSUPJOB objectAtIndex:0]];
+	}
 	
 	int mp = 0;
-	int rmp = 0;
-	int jmp = 0;
-	int sjmp = 0;
+	if (!mp_not_available_job)
+		mp = rmp + jmp + sjmp;
+	else if (!mp_not_available_supjob)
+		mp = (int)(rmp / 2) + sjmp;
 	
-	int lm = 75; // mp_level
-	// if only supjob available
-	//lm = 75 / 2;
+	NSLog(@"-----> Level MP %d ---- %d", lm, mp);
 	
-	rmp = [CoreFunctions scaleMP:3 baseMP:10 levelMP:lm];
-	jmp = [CoreFunctions scaleMP:5 baseMP:14 levelMP:lm level:75 job:@"BlackMage"];
-	sjmp = [CoreFunctions scaleMP:6 baseMP:16 suplevel:75/2 supjob:@"Summoner"];
-	
-	// if main available
-	mp = rmp + jmp + sjmp;
-	// if supjob available
-	//mp = (int)(rmp / 2) + sjmp;
+	return row;
 	
 	int rstr = [CoreFunctions scaleSTATS:0.35 baseSTATS:3 level:75];
 	int jstr = [CoreFunctions scaleSTATS:0.5 baseSTATS:5 level:75];
 	int sjstr = [CoreFunctions scaleSTATS:0.4 baseSTATS:4 level:75/2];
 	int str = rstr + jstr + (int)(sjstr / 2);
 	
-	NSLog(@"HP ---------> hp:%d mp:%d str:%d", hp, mp, str);
+	//NSLog(@"HP ---------> hp:%d mp:%d str:%d", hp, mp, str);
 	return row;
 }
 

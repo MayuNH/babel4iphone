@@ -37,7 +37,18 @@
 
 -(void) addMyCharacter:(NSArray *)attr position:(int)p
 {
-	NSLog(@"---> %@", attr);
+	int level = 0;
+	int suplevel = 0;
+	if ([attr count] > 5)
+		level = [[attr objectAtIndex:5] intValue];
+	if ([attr count] > 10)
+		suplevel = [[attr objectAtIndex:10] intValue];
+	NSArray *info = [[SharedData Initialize] getCharInfo:[attr objectAtIndex:2] 
+													 job:[attr objectAtIndex:3] 
+												   level:level 
+												  supjob:[attr objectAtIndex:4] 
+												suplevel:suplevel];
+	//NSLog(@"---> %@", attr);
 	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
@@ -48,7 +59,18 @@
 
 -(void) addEnemyCharacter:(NSArray *)attr position:(int)p
 {
-	NSLog(@"---> %@", attr);
+	int level = 0;
+	int suplevel = 0;
+	if ([attr count] > 5)
+		level = [[attr objectAtIndex:5] intValue];
+	if ([attr count] > 10)
+		suplevel = [[attr objectAtIndex:10] intValue];
+	NSArray *info = [[SharedData Initialize] getCharInfo:[attr objectAtIndex:2] 
+													 job:[attr objectAtIndex:3] 
+												   level:level 
+												  supjob:[attr objectAtIndex:4] 
+												suplevel:suplevel];
+	//NSLog(@"---> %@", attr);
 	NSString *fname = [NSString stringWithFormat:@"%@.png", [attr objectAtIndex:1]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
