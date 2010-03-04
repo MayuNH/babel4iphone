@@ -68,3 +68,42 @@ if __name__ == "__main__":
             print "ERRORE: Alcuni scale possono non essere stati inseriti!!!"
     else:
         print "Impossibile creare tabella scale."
+    
+    sql = 'CREATE TABLE "skill" ("id" VARCHAR(25) PRIMARY KEY  NOT NULL , "desc" TEXT, "mp_cost" INTEGER DEFAULT 0, "attribute" VARCHAR(25), "duration" INTEGER DEFAULT 0, "aoe" BOOL DEFAULT 0, "passive" BOOL DEFAULT 0)'
+    if d.execute(sql):
+        print "Creata tabella skill."
+        
+        check = False
+        for r in s.select("*", "skill"):
+            r[0] = "'%s'" % r[0]
+            r[1] = "'%s'" % r[1]
+            r[3] = "'%s'" % r[3]
+            if not d.insert("skill", r):
+                check = True
+        
+        print "Database client popolato con le entry..."
+        for r in d.select("*", "skill"):
+            print r
+        if check:
+            print "ERRORE: Alcune skill possono non essere stati inseriti!!!"
+    else:
+        print "Impossibile creare tabella skill."
+    
+    sql = 'CREATE TABLE "skill_set" ("id" INTEGER PRIMARY KEY  NOT NULL ,"type_id" VARCHAR(25) NOT NULL ,"skill_id" VARCHAR(25) NOT NULL ,"level" INTEGER DEFAULT 1 )' 
+    if d.execute(sql):
+        print "Creata tabella skill_set."
+        
+        check = False
+        for r in s.select("*", "skill_set"):
+            r[1] = "'%s'" % r[1]
+            r[2] = "'%s'" % r[2]
+            if not d.insert("skill_set", r):
+                check = True
+        
+        print "Database client popolato con le entry..."
+        for r in d.select("*", "skill_set"):
+            print r
+        if check:
+            print "ERRORE: Alcune skill_set possono non essere stati inseriti!!!"
+    else:
+        print "Impossibile creare tabella skill_set."
