@@ -16,27 +16,18 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#import <Foundation/Foundation.h>
-#import <CFNetwork/CFNetwork.h>
-#import <sqlite3.h>
-
-@interface SharedData : NSObject
+@interface Character : NSObject 
 {
-	sqlite3 *database;
-	
-	NSInputStream *inputStream;
-	NSOutputStream *outputStream;
+	int pos;
+	int hp;
+	int mp;
 }
 
--(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
--(void) connectToDatabase;
--(NSMutableArray *) execQuery:(NSString *)sqlStatement;
--(NSMutableArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
+@property (nonatomic, readwrite) int pos;
+@property (nonatomic, readwrite) int hp;
+@property (nonatomic, readwrite) int mp;
 
--(void) connectToServer;
--(void) sendToServer:(NSString *)cmd;
--(void) __dispatch:(NSString *)msg;
-
-+(SharedData *) Initialize;
++(id) charWithPos:(int)apos hp:(int)ahp mp:(int)amp;
+-(id) initWithPos:(int)apos hp:(int)ahp mp:(int)amp;
 
 @end

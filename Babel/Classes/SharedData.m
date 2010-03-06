@@ -23,6 +23,7 @@
 #define DATABASE	"gameDB.sqlite"
 #define HOST		"127.0.0.1"
 #define PORT		66666
+#define DELIMETER	"\r\n"
 
 @implementation SharedData
 
@@ -30,7 +31,6 @@
 {	
 	[inputStream release];
 	[outputStream release];
-	[DELIMETER release];
 	
 	sqlite3_close(database);
 	
@@ -250,13 +250,12 @@
 	[inputStream open];
 	[outputStream open];
 	
-	DELIMETER = @"\r\n";
 	[self sendToServer:[NSString stringWithFormat:@"U|%@", [[UIDevice currentDevice] uniqueIdentifier]]];
 }
 
 -(void) sendToServer:(NSString *)cmd
 {
-	cmd = [cmd stringByAppendingString:DELIMETER];
+	cmd = [cmd stringByAppendingString:[NSString stringWithFormat:@"%s", DELIMETER]];
     [outputStream write:(const uint8_t *)[cmd UTF8String] maxLength:[cmd length]];    
 }
 
@@ -291,7 +290,7 @@
 						NSString *output = [[NSString alloc] initWithBytes:buffer length:len encoding:NSASCIIStringEncoding];
 						if (nil != output)
 						{
-							NSArray *array_output = [output componentsSeparatedByString:DELIMETER];
+							NSArray *array_output = [output componentsSeparatedByString:[NSString stringWithFormat:@"%s", DELIMETER]];
 							[output release];
 							for (NSString *msg in array_output)
 								if (![msg isEqual:@""]) [self __dispatch:msg];

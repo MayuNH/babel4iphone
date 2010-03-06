@@ -150,7 +150,7 @@
 	}
 	else
 	{
-		turn = NO;
+		self.turn = NO;
 		[self closeMenu];
 		[lb setString:[@"It's turn of " stringByAppendingString:name]];
 	}

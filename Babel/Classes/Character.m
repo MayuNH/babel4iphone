@@ -16,27 +16,40 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#import <Foundation/Foundation.h>
-#import <CFNetwork/CFNetwork.h>
-#import <sqlite3.h>
+#import "Character.h"
 
-@interface SharedData : NSObject
+@implementation Character
+
+@synthesize pos, hp, mp;
+
++(id) charWithPos:(int)apos hp:(int)ahp mp:(int)amp
 {
-	sqlite3 *database;
-	
-	NSInputStream *inputStream;
-	NSOutputStream *outputStream;
+	return [[[self alloc] initWithPos:apos hp:ahp mp:amp] autorelease];
 }
 
--(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
--(void) connectToDatabase;
--(NSMutableArray *) execQuery:(NSString *)sqlStatement;
--(NSMutableArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
+-(id) initWithPos:(int)apos hp:(int)ahp mp:(int)amp
+{
+    if ((self = [super init]))
+	{
+		self.pos = apos;
+		self.hp = ahp;
+		self.mp = amp;
+    }
+	
+    return self;
+}
 
--(void) connectToServer;
--(void) sendToServer:(NSString *)cmd;
--(void) __dispatch:(NSString *)msg;
-
-+(SharedData *) Initialize;
+// on "dealloc" you need to release all your retained objects
+-(void) dealloc
+{	
+	NSLog(@"-----------> Release Character");
+	
+	// in case you have something to dealloc, do it in this method
+	// in this particular example nothing needs to be released.
+	// cocos2d will automatically release all the children (Label)
+	
+	// don't forget to call "super dealloc"
+	[super dealloc];
+}
 
 @end

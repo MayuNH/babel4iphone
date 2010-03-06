@@ -264,15 +264,15 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateExpansionKey</key>
 							<array>
 								<string>29B97314FDCFA39411CA2CEA</string>
+								<string>506EDAA3102F461B00A389B3</string>
 								<string>2D500B1D0D5A766B00DBA0E3</string>
-								<string>50F414EB1069373D002A0D5E</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>10</integer>
-									<integer>4</integer>
+									<integer>24</integer>
+									<integer>9</integer>
 									<integer>0</integer>
 								</array>
 							</array>
@@ -314,7 +314,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>GameLayer.m</string>
+								<string>Character.h</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -322,11 +322,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>GameLayer.m</string>
+										<string>Character.h</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>885D3BAF1139A643004BA722</string>
+										<string>88F45FC0114284BE00A48043</string>
 										<key>history</key>
 										<array>
 											<string>887E47C510C6EAC600F260C8</string>
@@ -334,13 +334,9 @@
 											<string>887E480310C6EC7400F260C8</string>
 											<string>887E480410C6EC7400F260C8</string>
 											<string>880F6DBF10C6FC95004B0271</string>
-											<string>88D67B8610E666BE00D36BC2</string>
 											<string>88D67B8810E666BE00D36BC2</string>
 											<string>88D67D5B10E68F6900D36BC2</string>
 											<string>88DC544910F80C6200A855E9</string>
-											<string>88DC544A10F80C6200A855E9</string>
-											<string>88DC544B10F80C6200A855E9</string>
-											<string>88DC544C10F80C6200A855E9</string>
 											<string>88DC544D10F80C6200A855E9</string>
 											<string>88DC544F10F80C6200A855E9</string>
 											<string>88DC545210F80C6200A855E9</string>
@@ -348,7 +344,6 @@
 											<string>8888578F1114C7F200EF5663</string>
 											<string>888857901114C7F200EF5663</string>
 											<string>888857911114C7F200EF5663</string>
-											<string>88E3BD041118BAF7000025A7</string>
 											<string>88E3BD051118BAF7000025A7</string>
 											<string>88E3BD061118BAF7000025A7</string>
 											<string>88A2F2D61130677D0059F006</string>
@@ -364,20 +359,38 @@
 											<string>88A2F2E01130677D0059F006</string>
 											<string>88076D621133095500EF987B</string>
 											<string>88076D631133095500EF987B</string>
-											<string>885D3B5711399CF4004BA722</string>
-											<string>885D3B5811399CF4004BA722</string>
 											<string>885D3B5911399CF4004BA722</string>
 											<string>885D3B5A11399CF4004BA722</string>
-											<string>885D3B5B11399CF4004BA722</string>
-											<string>885D3B5C11399CF4004BA722</string>
-											<string>885D3B5E11399CF4004BA722</string>
-											<string>885D3B6111399CF4004BA722</string>
-											<string>885D3B7911399F3D004BA722</string>
-											<string>885D3B7A11399F3D004BA722</string>
-											<string>885D3B9C1139A4ED004BA722</string>
-											<string>885D3BAC1139A643004BA722</string>
-											<string>885D3BAD1139A643004BA722</string>
-											<string>885D3BAE1139A643004BA722</string>
+											<string>88F45EA111426CA800A48043</string>
+											<string>88F45ED71142789F00A48043</string>
+											<string>88F45EE811427A1100A48043</string>
+											<string>88F45EE911427A1100A48043</string>
+											<string>88F45F1011427BF700A48043</string>
+											<string>88F45F1D11427C7700A48043</string>
+											<string>88F45F3F11427DBA00A48043</string>
+											<string>88F45F4011427DBA00A48043</string>
+											<string>88F45F4111427DBA00A48043</string>
+											<string>88F45F4211427DBA00A48043</string>
+											<string>88F45F4311427DBA00A48043</string>
+											<string>88F45F4411427DBA00A48043</string>
+											<string>88F45F4511427DBA00A48043</string>
+											<string>88F45F4611427DBA00A48043</string>
+											<string>88F45F4711427DBA00A48043</string>
+											<string>88F45F4811427DBA00A48043</string>
+											<string>88F45F4911427DBA00A48043</string>
+											<string>88F45F4A11427DBA00A48043</string>
+											<string>88F45F4B11427DBA00A48043</string>
+											<string>88F45FA51142837700A48043</string>
+											<string>88F45FA71142837700A48043</string>
+											<string>88F45FAF1142842200A48043</string>
+											<string>88F45FB8114284B600A48043</string>
+											<string>88F45FB9114284B600A48043</string>
+											<string>88F45FBA114284B600A48043</string>
+											<string>88F45FBB114284B600A48043</string>
+											<string>88F45FBC114284B600A48043</string>
+											<string>88F45FBD114284B600A48043</string>
+											<string>88F45FBE114284B600A48043</string>
+											<string>88F45FA41142837700A48043</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -389,14 +402,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 0}, {1131, 517}}</string>
+								<string>{{0, 0}, {1131, 617}}</string>
 								<key>RubberWindowFrame</key>
 								<string>0 59 1440 819 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
 							<key>Proportion</key>
-							<string>517pt</string>
+							<string>617pt</string>
 						</dict>
 						<dict>
 							<key>ContentConfiguration</key>
@@ -409,14 +422,14 @@
 							<key>GeometryConfiguration</key>
 							<dict>
 								<key>Frame</key>
-								<string>{{0, 522}, {1131, 256}}</string>
+								<string>{{0, 622}, {1131, 156}}</string>
 								<key>RubberWindowFrame</key>
 								<string>0 59 1440 819 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
 							<key>Proportion</key>
-							<string>256pt</string>
+							<string>156pt</string>
 						</dict>
 					</array>
 					<key>Proportion</key>
@@ -435,9 +448,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>885D3B46113995BA004BA722</string>
+				<string>88F45E98114269EC00A48043</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>885D3B47113995BA004BA722</string>
+				<string>88F45E99114269EC00A48043</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -660,7 +673,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>887E47A910C6EA4900F260C8</string>
-				<string>885D3B48113995BA004BA722</string>
+				<string>88F45E9A114269EC00A48043</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -782,13 +795,13 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1CD10A99069EF8BA00B06720</string>
-				<string>885D3B6611399CF4004BA722</string>
+				<string>88F45EA511426CA800A48043</string>
 				<string>1C162984064C10D400B95A72</string>
-				<string>885D3B6711399CF4004BA722</string>
-				<string>885D3B6811399CF4004BA722</string>
-				<string>885D3B6911399CF4004BA722</string>
-				<string>885D3B6A11399CF4004BA722</string>
-				<string>885D3B6B11399CF4004BA722</string>
+				<string>88F45EA611426CA800A48043</string>
+				<string>88F45EA711426CA800A48043</string>
+				<string>88F45EA811426CA800A48043</string>
+				<string>88F45EA911426CA800A48043</string>
+				<string>88F45EAA11426CA800A48043</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.debugV3</string>
@@ -952,7 +965,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C78EAAD065D492600B07095</string>
-				<string>885D3B6C11399CF4004BA722</string>
+				<string>88F45EAB11426CA800A48043</string>
 				<string>1C78EAAC065D492600B07095</string>
 			</array>
 			<key>ToolbarConfiguration</key>

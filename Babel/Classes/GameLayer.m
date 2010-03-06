@@ -37,6 +37,8 @@
 
 -(void) addMyCharacter:(NSArray *)baseInfo position:(int)p
 {
+	Character *c = [Character charWithPos:p hp:0 mp:0];
+	
 	int suplevel = 0;
 	if ([baseInfo count] > 10)
 		suplevel = [[baseInfo objectAtIndex:10] intValue];
