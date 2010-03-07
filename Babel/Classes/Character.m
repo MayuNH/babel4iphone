@@ -17,23 +17,34 @@
 
 
 #import "Character.h"
+#import "SharedData.h"
 
 @implementation Character
 
-@synthesize pos, hp, mp;
+@synthesize name, pos, hp, mp;
 
-+(id) charWithPos:(int)apos hp:(int)ahp mp:(int)amp
++(id) charWithInfo:(NSArray *)baseInfo position:(int)p
 {
-	return [[[self alloc] initWithPos:apos hp:ahp mp:amp] autorelease];
+	return [[[self alloc] initWithInfo:baseInfo position:p] autorelease];
 }
 
--(id) initWithPos:(int)apos hp:(int)ahp mp:(int)amp
+-(id) initWithInfo:(NSArray *)baseInfo position:(int)p
 {
     if ((self = [super init]))
 	{
-		self.pos = apos;
-		self.hp = ahp;
-		self.mp = amp;
+		int suplevel = 0;
+		if ([baseInfo count] > 10)
+			suplevel = [[baseInfo objectAtIndex:10] intValue];
+		NSMutableArray *extraInfo = [[SharedData Initialize] getCharInfo:[baseInfo objectAtIndex:2] 
+																	 job:[baseInfo objectAtIndex:3] 
+																   level:[[baseInfo objectAtIndex:5] intValue]
+																  supjob:[baseInfo objectAtIndex:4] 
+																suplevel:suplevel];
+		
+		self.name = [baseInfo objectAtIndex:1];
+		self.pos = p;
+		self.hp = [[baseInfo objectAtIndex:7] intValue];
+		self.mp = [[baseInfo objectAtIndex:8] intValue];
     }
 	
     return self;
@@ -42,6 +53,8 @@
 // on "dealloc" you need to release all your retained objects
 -(void) dealloc
 {	
+	[name release];
+	
 	NSLog(@"-----------> Release Character");
 	
 	// in case you have something to dealloc, do it in this method

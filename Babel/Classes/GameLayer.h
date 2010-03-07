@@ -17,7 +17,6 @@
 
 
 #import "cocos2d.h"
-#import "Character.h"
 
 @interface GameLayer : CCLayer
 {

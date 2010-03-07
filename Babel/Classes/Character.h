@@ -18,16 +18,18 @@
 
 @interface Character : NSObject 
 {
+	NSString* name;
 	int pos;
 	int hp;
 	int mp;
 }
 
+@property (nonatomic, readwrite, retain) NSString* name;
 @property (nonatomic, readwrite) int pos;
 @property (nonatomic, readwrite) int hp;
 @property (nonatomic, readwrite) int mp;
 
-+(id) charWithPos:(int)apos hp:(int)ahp mp:(int)amp;
--(id) initWithPos:(int)apos hp:(int)ahp mp:(int)amp;
++(id) charWithInfo:(NSArray *)baseInfo position:(int)p;
+-(id) initWithInfo:(NSArray *)baseInfo position:(int)p;
 
 @end

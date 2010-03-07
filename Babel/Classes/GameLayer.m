@@ -17,7 +17,7 @@
 
 
 #import "GameLayer.h"
-#import "SharedData.h"
+#import "Character.h"
 
 @implementation GameLayer
 
@@ -37,21 +37,9 @@
 
 -(void) addMyCharacter:(NSArray *)baseInfo position:(int)p
 {
-	Character *c = [Character charWithPos:p hp:0 mp:0];
+	Character *c = [Character charWithInfo:baseInfo position:p];
 	
-	int suplevel = 0;
-	if ([baseInfo count] > 10)
-		suplevel = [[baseInfo objectAtIndex:10] intValue];
-	NSMutableArray *info = [[SharedData Initialize] getCharInfo:[baseInfo objectAtIndex:2] 
-															job:[baseInfo objectAtIndex:3] 
-														  level:[[baseInfo objectAtIndex:5] intValue]
-														 supjob:[baseInfo objectAtIndex:4] 
-													   suplevel:suplevel];
-	
-	NSLog(@"---> %@", baseInfo);
-	NSLog(@"---> %@", info);
-	
-	NSString *fname = [NSString stringWithFormat:@"%@.png", [baseInfo objectAtIndex:1]];
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [c name]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.anchorPoint = CGPointZero;
@@ -61,19 +49,9 @@
 
 -(void) addEnemyCharacter:(NSArray *)baseInfo position:(int)p
 {
-	int suplevel = 0;
-	if ([baseInfo count] > 10)
-		suplevel = [[baseInfo objectAtIndex:10] intValue];
-	NSMutableArray *info = [[SharedData Initialize] getCharInfo:[baseInfo objectAtIndex:2] 
-															job:[baseInfo objectAtIndex:3] 
-														  level:[[baseInfo objectAtIndex:5] intValue]
-														 supjob:[baseInfo objectAtIndex:4] 
-													   suplevel:suplevel];
+	Character *c = [Character charWithInfo:baseInfo position:p];
 	
-	NSLog(@"---> %@", baseInfo);
-	NSLog(@"---> %@", info);
-	
-	NSString *fname = [NSString stringWithFormat:@"%@.png", [baseInfo objectAtIndex:1]];
+	NSString *fname = [NSString stringWithFormat:@"%@.png", [c name]];
 	CCSprite *sprite = [CCSprite spriteWithFile:fname];
 	sprite.scale = 0.4;
 	sprite.scaleX = -0.4;

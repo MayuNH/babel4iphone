@@ -64,6 +64,7 @@
 		[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
 		NSLog(@"SQLITE Copy new database");
 	}
+	
 	[fileManager release];
 }
 
@@ -256,7 +257,7 @@
 -(void) sendToServer:(NSString *)cmd
 {
 	cmd = [cmd stringByAppendingString:[NSString stringWithFormat:@"%s", DELIMETER]];
-    [outputStream write:(const uint8_t *)[cmd UTF8String] maxLength:[cmd length]];    
+    [outputStream write:(const uint8_t *)[cmd UTF8String] maxLength:[cmd length]];
 }
 
 -(void) stream:(NSStream *)stream handleEvent:(NSStreamEvent)streamEvent
