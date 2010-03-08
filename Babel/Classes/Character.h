@@ -18,18 +18,49 @@
 
 @interface Character : NSObject 
 {
+	int uid;
 	NSString* name;
 	int pos;
+	NSString* race;
+	NSString* job;
+	int level;
+	int exp;
+	NSString* supjob;
+	int suplevel;
+	int maxHp;
+	int maxMp;
 	int hp;
 	int mp;
+	int str;
+	int dex;
+	int vit;
+	int agi;
+	int inte;
+	int mnd;
 }
 
+@property (nonatomic, readwrite) int uid;
 @property (nonatomic, readwrite, retain) NSString* name;
 @property (nonatomic, readwrite) int pos;
+@property (nonatomic, readwrite, retain) NSString* race;
+@property (nonatomic, readwrite, retain) NSString* job;
+@property (nonatomic, readwrite) int level;
+@property (nonatomic, readwrite) int exp;
+@property (nonatomic, readwrite, retain) NSString* supjob;
+@property (nonatomic, readwrite) int suplevel;
+@property (nonatomic, readwrite) int maxHp;
+@property (nonatomic, readwrite) int maxMp;
 @property (nonatomic, readwrite) int hp;
 @property (nonatomic, readwrite) int mp;
+@property (nonatomic, readwrite) int str;
+@property (nonatomic, readwrite) int dex;
+@property (nonatomic, readwrite) int vit;
+@property (nonatomic, readwrite) int agi;
+@property (nonatomic, readwrite) int inte;
+@property (nonatomic, readwrite) int mnd;
+
+-(id) initWithInfo:(NSArray *)baseInfo position:(int)p;
 
 +(id) charWithInfo:(NSArray *)baseInfo position:(int)p;
--(id) initWithInfo:(NSArray *)baseInfo position:(int)p;
 
 @end
