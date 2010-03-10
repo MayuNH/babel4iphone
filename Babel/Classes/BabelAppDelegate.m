@@ -17,10 +17,6 @@
 
 
 #import "BabelAppDelegate.h"
-#import "cocos2d.h"
-#import "SharedData.h"
-#import "GameLayer.h"
-#import "InterfaceLayer.h"
 
 @implementation BabelAppDelegate
 

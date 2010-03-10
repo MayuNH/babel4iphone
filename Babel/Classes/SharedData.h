@@ -16,9 +16,23 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#import <Foundation/Foundation.h>
+#ifndef __SHARED_DATA_H__
+#define __SHARED_DATA_H__
+
+#define DATABASE	"gameDB.sqlite"
+#define HOST		"127.0.0.1"
+#define PORT		66666
+#define DELIMETER	"\r\n"
+
+#ifndef COCOS2D_VERSION
+#import "cocos2d.h"
+#endif
+
 #import <CFNetwork/CFNetwork.h>
 #import <sqlite3.h>
+#import "CoreFunctions.h"
+#import "GameLayer.h"
+#import "InterfaceLayer.h"
 
 @interface SharedData : NSObject
 {
@@ -40,3 +54,5 @@
 +(SharedData *) Initialize;
 
 @end
+
+#endif

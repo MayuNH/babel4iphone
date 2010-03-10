@@ -17,7 +17,6 @@
 
 
 #import "GameLayer.h"
-#import "Character.h"
 
 @implementation GameLayer
 

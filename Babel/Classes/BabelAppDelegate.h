@@ -16,7 +16,13 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#import <UIKit/UIKit.h>
+#ifndef COCOS2D_VERSION
+#import "cocos2d.h"
+#endif
+
+#import "SharedData.h"
+#import "GameLayer.h"
+#import "InterfaceLayer.h"
 
 @interface BabelAppDelegate : NSObject <UIApplicationDelegate>
 {

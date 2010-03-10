@@ -16,7 +16,15 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#ifndef __GAME_LAYER_H__
+#define __GAME_LAYER_H__
+
+#ifndef COCOS2D_VERSION
 #import "cocos2d.h"
+#endif
+
+#import "Character.h"
+#import "InterfaceLayer.h"
 
 @interface GameLayer : CCLayer
 {
@@ -28,3 +36,5 @@
 -(void) playFight;
 
 @end
+
+#endif

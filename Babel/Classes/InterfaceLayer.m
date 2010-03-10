@@ -17,15 +17,11 @@
 
 
 #import "InterfaceLayer.h"
-#import "SharedData.h"
-
-#define SHIFT 10000 // shifta i tag degli item dei menu da 10000 in poi
-#define MOVE 20
 
 @implementation InterfaceLayer
 
 -(id) init
-{
+{	
 	// always call "super" init
 	// Apple recommends to re-assign "self" with the "super" return value
 	if ((self = [super init]))

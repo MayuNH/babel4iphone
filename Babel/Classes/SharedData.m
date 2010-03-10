@@ -17,13 +17,6 @@
 
 
 #import "SharedData.h"
-#import "CoreFunctions.h"
-#import "CCDirector.h"
-
-#define DATABASE	"gameDB.sqlite"
-#define HOST		"127.0.0.1"
-#define PORT		66666
-#define DELIMETER	"\r\n"
 
 @implementation SharedData
 

@@ -16,6 +16,11 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#ifndef __CHARACTER_H__
+#define __CHARACTER_H__
+
+#import "SharedData.h"
+
 @interface Character : NSObject 
 {
 	int uid;
@@ -64,3 +69,5 @@
 +(id) charWithInfo:(NSArray *)baseInfo position:(int)p;
 
 @end
+
+#endif

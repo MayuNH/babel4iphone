@@ -16,6 +16,9 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#ifndef __CORE_FUNCTION_H__
+#define __CORE_FUNCTION_H__
+
 @interface CoreFunctions : NSObject
 {
 
@@ -30,3 +33,5 @@
 +(int) scaleSTATS:(float)sSTATS baseSTATS:(float)bSTATS level:(int)l;
 
 @end
+
+#endif

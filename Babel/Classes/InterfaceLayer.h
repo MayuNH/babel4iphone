@@ -16,7 +16,15 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#ifndef __INTERFACE_LAYER_H__
+#define __INTERFACE_LAYER_H__
+
+#define SHIFT 10000 // shifta i tag degli item dei menu da 10000 in poi
+#define MOVE 20
+
+#ifndef COCOS2D_VERSION
 #import "cocos2d.h"
+#endif
 
 @interface InterfaceLayer : CCLayer
 {
@@ -31,3 +39,5 @@
 -(void) setTurn:(NSString *)name;        // imposta il turno
 
 @end
+
+#endif

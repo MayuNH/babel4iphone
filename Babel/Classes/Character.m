@@ -17,7 +17,6 @@
 
 
 #import "Character.h"
-#import "SharedData.h"
 
 @implementation Character
 
