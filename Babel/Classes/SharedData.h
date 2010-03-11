@@ -19,10 +19,11 @@
 #ifndef __SHARED_DATA_H__
 #define __SHARED_DATA_H__
 
-#define DATABASE	"gameDB.sqlite"
 #define HOST		"127.0.0.1"
 #define PORT		66666
 #define DELIMETER	"\r\n"
+
+#define DATABASE	"gameDB.sqlite"
 
 #ifndef COCOS2D_VERSION
 #import "cocos2d.h"

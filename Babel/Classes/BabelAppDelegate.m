@@ -63,15 +63,14 @@
 	
 	GameLayer *glayer = [GameLayer node];
 	[scene addChild:glayer z:0 tag:0];  // tag 0 del game layer
-	
-	InterfaceLayer *mlayer = [InterfaceLayer node];
-	[scene addChild:mlayer z:1 tag:1];  // tag 1 del menu/dialog/map/ui layer
+	InterfaceLayer *ilayer = [InterfaceLayer node];
+	[scene addChild:ilayer z:1 tag:1];  // tag 1 del menu/dialog/map/ui layer
 	
 	[[CCDirector sharedDirector] runWithScene: scene];
 	[[SharedData Initialize] connectToDatabase];
 	[[SharedData Initialize] connectToServer];
 	
-	// test
+	// test fight
 	[[SharedData Initialize] sendToServer:@"F|U55555"];
 }
 
