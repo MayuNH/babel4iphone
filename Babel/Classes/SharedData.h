@@ -22,16 +22,8 @@
 #define HOST		"127.0.0.1"
 #define PORT		66666
 #define DELIMETER	"\r\n"
-
-<<<<<<< HEAD
-=======
 #define DATABASE	"gameDB.sqlite"
 
-#ifndef COCOS2D_VERSION
-#import "cocos2d.h"
-#endif
-
->>>>>>> b1f608646238989751a5310feeaaaa16fc018547
 #import <CFNetwork/CFNetwork.h>
 #import <sqlite3.h>
 #import "CoreFunctions.h"
@@ -49,6 +41,7 @@
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;
+-(void) stream:(NSStream *)stream handleEvent:(NSStreamEvent)streamEvent;
 
 +(SharedData *) Initialize;
 

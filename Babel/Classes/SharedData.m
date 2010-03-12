@@ -24,7 +24,6 @@
 {	
 	[inputStream release];
 	[outputStream release];
-	
 	sqlite3_close(database);
 	
 	NSLog(@"------------------- RELEASE SINGETON DATA ----------------------");
