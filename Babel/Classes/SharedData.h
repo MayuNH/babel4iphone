@@ -24,32 +24,23 @@
 #define PORT		66666
 #define DELIMETER	"\r\n"
 
-#ifndef COCOS2D_VERSION
-#import "cocos2d.h"
-#endif
-
 #import <CFNetwork/CFNetwork.h>
 #import <sqlite3.h>
 #import "CoreFunctions.h"
-#import "GameLayer.h"
-#import "InterfaceLayer.h"
 
 @interface SharedData : NSObject
 {
 	sqlite3 *database;
-	
 	NSInputStream *inputStream;
 	NSOutputStream *outputStream;
 }
 
--(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
 -(void) connectToDatabase;
 -(NSMutableArray *) execQuery:(NSString *)sqlStatement;
 -(NSMutableArray *) getCharInfo:(NSString *)race job:(NSString *)job level:(int)level supjob:(NSString *)supjob suplevel:(int)suplevel;
 
 -(void) connectToServer;
 -(void) sendToServer:(NSString *)cmd;
--(void) __dispatch:(NSString *)msg;
 
 +(SharedData *) Initialize;
 
