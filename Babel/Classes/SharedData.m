@@ -32,35 +32,6 @@
 	[super dealloc];
 }
 
--(void) __copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName
-{
-	// Create a FileManager object
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	// Get the path to the database in the application package
-	NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:databaseName];
-	// Check if the database already exists then remove it
-	BOOL success = [fileManager fileExistsAtPath:databasePath];
-	if (success)
-	{
-		if ([fileManager contentsEqualAtPath:databasePathFromApp andPath:databasePath] == YES)
-			NSLog(@"SQLITE Same database");
-		else
-		{
-			[fileManager removeItemAtPath:databasePath error:nil];
-			success = FALSE;
-			NSLog(@"SQLITE Remove database");
-		}
-	}
-	if (!success)
-	{
-		// Copy the database from the package to the users filesystem
-		[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
-		NSLog(@"SQLITE Copy new database");
-	}
-	
-	[fileManager release];
-}
-
 -(void) connectToDatabase
 {
 	NSString *databaseName = [NSString stringWithFormat:@"%s", DATABASE];
@@ -68,7 +39,7 @@
 	NSString *documentsDir = [documentPaths objectAtIndex:0];
 	NSString *databasePath = [documentsDir stringByAppendingPathComponent:databaseName];
 	
-	[self __copyDatabaseToDocuments:databasePath named:databaseName];
+	[CoreFunctions copyDatabaseToDocuments:databasePath named:databaseName];
 	
 	if (sqlite3_open([databasePath UTF8String], &database) != SQLITE_OK)
 		NSAssert1(0, @"SQLITE Error db. '%s'", sqlite3_errmsg(database));
@@ -287,7 +258,7 @@
 							NSArray *array_output = [output componentsSeparatedByString:[NSString stringWithFormat:@"%s", DELIMETER]];
 							[output release];
 							for (NSString *msg in array_output)
-								if (![msg isEqual:@""]) [self __dispatch:msg];
+								if (![msg isEqual:@""]) [CoreFunctions dispatch:msg];
 						}
 					}
 				}
@@ -310,80 +281,6 @@
 	}
 	
 	NSLog(@"%@ : %@", io, event);
-}
-
--(void) __dispatch:(NSString *)msg
-{
-	id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
-	id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
-	
-	NSArray *arr = [msg componentsSeparatedByString:@"|"];
-	
-	// MENU
-	if ([[arr objectAtIndex:0] isEqualToString:@"M"])
-	{
-		NSArray *menuitems = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
-		[interface initMenu:menuitems];
-		NSLog(@"Menu: %@", [arr objectAtIndex:1]);
-	}
-	// TURN
-	else if ([[arr objectAtIndex:0] isEqualToString:@"T"])
-	{
-		[interface setTurn:[arr objectAtIndex:1]];
-		NSLog(@"Turn: %@", [arr objectAtIndex:1]);
-	}
-	// ANIM FIGHT
-	else if ([[arr objectAtIndex:0] isEqualToString:@"A"])
-	{
-		[game playFight];
-		NSLog(@"play fight: %@", [arr objectAtIndex:1]);
-	}
-	// CHARACTER
-	else if ([[arr objectAtIndex:0] isEqualToString:@"P1"])
-	{
-		int pos = 1;
-		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
-		for (NSString *c in chrs)
-		{
-			NSArray *info = [c componentsSeparatedByString:@","];
-			[game addMyCharacter:info position:pos];
-			pos = pos + 1;
-		}
-	}
-	else if ([[arr objectAtIndex:0] isEqualToString:@"P2"])
-	{
-		int pos = 1;
-		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
-		for (NSString *c in chrs)
-		{
-			NSArray *info = [c componentsSeparatedByString:@","];
-			[game addEnemyCharacter:info position:pos];
-			pos = pos + 1;
-		}
-	}
-	// ECHO
-	else if ([[arr objectAtIndex:0] isEqualToString:@"E"])
-	{
-		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Alert" message:[arr objectAtIndex:1] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
-		[alert show];
-		[alert release];
-	}
-	// NOT IMPLEMENTED
-	else
-		NSLog(@"Not implemented: %@", arr);
-}
-
--(void) alertView:(UIAlertView *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-	// the user clicked one of the OK/Cancel buttons
-	if (buttonIndex == 1)
-	{
-		NSLog(@"Ok on %@", [actionSheet title]);
-	}
-	else
-	{
-		NSLog(@"Cancel on %@", [actionSheet title]);
-	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

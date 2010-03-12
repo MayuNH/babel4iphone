@@ -16,6 +16,9 @@
 // along with babel4iphone.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#ifndef __BABEL_APP_H__
+#define __BABEL_APP_H__
+
 #ifndef COCOS2D_VERSION
 #import "cocos2d.h"
 #endif
@@ -32,3 +35,5 @@
 @property (nonatomic, retain) UIWindow *window;
 
 @end
+
+#endif

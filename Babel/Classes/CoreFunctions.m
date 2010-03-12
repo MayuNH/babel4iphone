@@ -20,6 +20,115 @@
 
 @implementation CoreFunctions
 
++(void) dispatch:(NSString *)msg
+{
+	NSArray *arr = [msg componentsSeparatedByString:@"|"];
+	
+	// MENU
+	if ([[arr objectAtIndex:0] isEqualToString:@"M"])
+	{
+		NSArray *menuitems = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
+		id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
+		[interface initMenu:menuitems];
+		NSLog(@"Menu: %@", [arr objectAtIndex:1]);
+	}
+	// TURN
+	else if ([[arr objectAtIndex:0] isEqualToString:@"T"])
+	{
+		id interface = [[[CCDirector sharedDirector] runningScene] getChildByTag:1];
+		[interface setTurn:[arr objectAtIndex:1]];
+		NSLog(@"Turn: %@", [arr objectAtIndex:1]);
+	}
+	// ANIM FIGHT
+	else if ([[arr objectAtIndex:0] isEqualToString:@"A"])
+	{
+		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
+		[game playFight];
+		NSLog(@"play fight: %@", [arr objectAtIndex:1]);
+	}
+	// CHARACTER
+	else if ([[arr objectAtIndex:0] isEqualToString:@"P1"])
+	{
+		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
+		int pos = 1;
+		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
+		for (NSString *c in chrs)
+		{
+			NSArray *info = [c componentsSeparatedByString:@","];
+			[game addMyCharacter:info position:pos];
+			pos = pos + 1;
+		}
+	}
+	else if ([[arr objectAtIndex:0] isEqualToString:@"P2"])
+	{
+		id game = [[[CCDirector sharedDirector] runningScene] getChildByTag:0];
+		int pos = 1;
+		NSArray *chrs = [[arr objectAtIndex:1] componentsSeparatedByString:@";"];
+		for (NSString *c in chrs)
+		{
+			NSArray *info = [c componentsSeparatedByString:@","];
+			[game addEnemyCharacter:info position:pos];
+			pos = pos + 1;
+		}
+	}
+	// ECHO
+	else if ([[arr objectAtIndex:0] isEqualToString:@"E"])
+	{
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Alert" message:[arr objectAtIndex:1] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Ok", nil];
+		[alert show];
+		[alert release];
+	}
+	// NOT IMPLEMENTED
+	else
+		NSLog(@"Not implemented: %@", arr);
+}
+
++(void) alertView:(UIAlertView *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+	// the user clicked one of the OK/Cancel buttons
+	if (buttonIndex == 1)
+	{
+		NSLog(@"Ok on %@", [actionSheet title]);
+	}
+	else
+	{
+		NSLog(@"Cancel on %@", [actionSheet title]);
+	}
+}
+
++(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName
+{
+	// Create a FileManager object
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	// Get the path to the database in the application package
+	NSString *databasePathFromApp = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:databaseName];
+	// Check if the database already exists then remove it
+	BOOL success = [fileManager fileExistsAtPath:databasePath];
+	if (success)
+	{
+		if ([fileManager contentsEqualAtPath:databasePathFromApp andPath:databasePath] == YES)
+			NSLog(@"SQLITE Same database");
+		else
+		{
+			[fileManager removeItemAtPath:databasePath error:nil];
+			success = FALSE;
+			NSLog(@"SQLITE Remove database");
+		}
+	}
+	if (!success)
+	{
+		// Copy the database from the package to the users filesystem
+		[fileManager copyItemAtPath:databasePathFromApp toPath:databasePath error:nil];
+		NSLog(@"SQLITE Copy new database");
+	}
+	
+	[fileManager release];
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// CALC UTILITIES /////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
 +(int) scaleHP:(float)sHP baseHP:(float)bHP scaleHPxXx:(float)sHPxXx level:(int)l
 {
 	float raceHP = sHP * (l-1) + bHP;

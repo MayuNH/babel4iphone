@@ -19,11 +19,25 @@
 #ifndef __CORE_FUNCTION_H__
 #define __CORE_FUNCTION_H__
 
+#ifndef COCOS2D_VERSION
+#import "cocos2d.h"
+#endif
+
+#import "GameLayer.h"
+#import "InterfaceLayer.h"
+
 @interface CoreFunctions : NSObject
 {
 
 }
 
+// Manage msgs received from server
++(void) dispatch:(NSString *)msg;
+
+// Utilities sqlite
++(void) copyDatabaseToDocuments:(NSString *)databasePath named:(NSString *)databaseName;
+
+// Calc Utilities
 +(int) scaleHP:(float)sHP baseHP:(float)bHP scaleHPxXx:(float)sHPxXx level:(int)l;
 +(int) scaleHP:(float)sHP baseHP:(float)bHP scaleHPxXx:(float)sHPxXx level:(int)l job:(NSString *)j;
 +(int) scaleHP:(float)sHP baseHP:(float)bHP suplevel:(int)sl supjob:(NSString *)sj;
