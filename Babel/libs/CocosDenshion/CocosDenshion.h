@@ -19,6 +19,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
  */
 
 /** 
@@ -64,55 +65,30 @@ Requirements:
  
 */ 
 
-/* Changelog
-2.0 (2009.07.09) * Change all file names to file paths to support loading sounds from locations other than root.
-                   (Thanks to Jason Cecil)
-                 * Take out C++ dependencies to make it easy to include CocosDenshion in static libraries. 
-1.6 (2009.07.02) * Added looping property to CDSourceWrapper so that looping flag can be toggled during playback
-                   (Thanks to Pablo Ruiz)
-                 * Added fix to ensure mp3 files are not decoded in software on 3.0 (Thanks to Bryan Accleroto) 
-                 * Added mute to CDAudioManager
-                 * Added handlers for resign active and become active to CDAudioManager (Thanks to Dominique Bongard)
-			     * Added stopBackgroundMusic method with flag to indicate whether resources should be released
-				   (Thanks to Dominique Bongard) 
-				 * Added functionality to mute channel groups
-1.5 (2009.06.13) * Added preLoadBackgroundMusic method to CDAudioManager to allow background music to be preloaded
-                 * Fixed bug with sound engine locking up when trying to load non existent file asynchronously 
-                   (Thanks to Edison's Labs for reporting)
-1.4 (2009.06.10) * Implemented asynchronous initialisation of audio manager
-                 * Implemented asynchronous loading of sound buffers
-                 * Fixed problem with mute button being ignored if game played background music (Thanks to Sebastien Flory for reporting)
-1.3 (2009.06.02) * Added non interruptible option for channel group
-                 * Added loop parameter for playing background music
-                 * Added isPlaying property to CDSourceWrapper
-                 * Modified CDSourceWrapper to return last set values of pitch, pan and gain
-                 * Added option of specifying callback selector for background music completion to CDAudioManager
-                 * Workaround for issue in 2.2 & 2.2.1 simulator whereby OpenAL playback would be killed after 
-                   an AVAudioPlayer (backgroundMusic) stops.
-1.2 (2009.05.27) * Changes for integration with cocos2d svn repository.
-				 * Renamed myOpenALSupport.h to CDOpenALSupport.h to distinguish it from the
-				   version included with the Aeterius sound engine.
-				 * Added unloadBuffer method.
-				 * Updated myOpenALSupport.h to latest version with support for IMA4 compressed files
-1.1 (2009.05.26) * Added code for handling audio session interruption. Thanks to Andy Fitter and
-                   Ben Britten for the code.
-1.0 (2009.05.01) * Initial release
-*/
-
 #import <UIKit/UIKit.h>
 #import <OpenAL/al.h>
 #import <OpenAL/alc.h>
 #import <AudioToolbox/AudioToolbox.h>
-#import "CCFileUtils.h"
+#import "CDConfig.h"
 
-//You may want to edit these. Devices won't support any more than 32 sources though.
-#define CD_MAX_BUFFERS 32 //Total number of sounds that can be loaded
+#if CD_DEBUG
+#define CDLOG(...) NSLog(__VA_ARGS__)
+#else
+#define CDLOG(...) do {} while (0)
+#endif
+
+
 #define CD_MAX_SOURCES 32 //Total number of playback channels that can be created (32 is the limit)
-
 #define CD_NO_SOURCE 0xFEEDFAC //Return value indicating playback failed i.e. no source
 #define CD_IGNORE_AUDIO_SESSION 0xBEEFBEE //Used internally to indicate audio session will not be handled
 #define CD_CHANNEL_GROUP_NON_INTERRUPTIBLE 0xFEDEEFF //User internally to indicate channel group is not interruptible
 #define CD_MUTE      0xFEEDBAB //Return value indicating sound engine is muted or non functioning
+
+#define CD_SAMPLE_RATE_HIGH 44100
+#define CD_SAMPLE_RATE_MID  22050
+#define CD_SAMPLE_RATE_LOW  16000
+#define CD_SAMPLE_RATE_BASIC 8000
+#define CD_SAMPLE_RATE_DEFAULT 44100
 
 enum bufferState {
 	CD_BS_EMPTY = 0,
@@ -126,6 +102,18 @@ typedef struct _channelGroup {
 	int currentIndex;
 	bool mute;
 } channelGroup;
+
+/**
+ Collectin of utilities required by CocosDenshion
+ */
+@interface CDUtilities : NSObject
+{
+}	
+
+/** Fundamentally the same as the corresponding method is CCFileUtils but added to break binding to cocos2d */
++(NSString*) fullPathFromRelativePath:(NSString*) relPath;
+
+@end
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -150,6 +138,9 @@ typedef struct _channelGroup {
 	ALuint			*_buffers;
 	int				*_bufferStates;
 	ALuint			*_sourceBufferAttachments;
+#ifdef CD_USE_STATIC_BUFFERS	
+	ALvoid          **_bufferData;
+#endif	
 	channelGroup	*_channelGroups;
 	ALCcontext		*context;
 	int				_channelGroupTotal;
@@ -157,11 +148,12 @@ typedef struct _channelGroup {
 	UInt32			_audioSessionCategory;
 	BOOL			_handleAudioSession;
 	BOOL			_mute;
-	
+	ALfloat			_preMuteGain;
+
 	ALenum			lastErrorCode;
 	BOOL			functioning;
 	float			asynchLoadProgress;
-	
+		
 }
 
 @property (readwrite, nonatomic) ALfloat masterGain;
@@ -169,6 +161,9 @@ typedef struct _channelGroup {
 @property (readonly)  ALenum lastErrorCode;//Last OpenAL error code that was generated
 @property (readonly)  BOOL functioning;//Is the sound engine functioning
 @property (readwrite) float asynchLoadProgress;
+
+/** Sets the sample rate for the audio mixer. For best performance this should match the sample rate of your audio content */
++ (void) setMixerSampleRate:(Float32) sampleRate;
 
 /** Initializes the engine with a group definition and a total number of groups */
 - (id)init:(int[]) channelGroupDefinitions channelGroupTotal:(int) channelGroupTotal;
@@ -182,6 +177,8 @@ typedef struct _channelGroup {
 - (void) stopSound:(ALuint) sourceId;
 /** Stops playing a channel group */
 - (void) stopChannelGroup:(int) channelGroupId;
+/** Stops all playing sounds */
+-(void) stopAllSounds;
 - (void) setChannelGroupNonInterruptible:(int) channelGroupId isNonInterruptible:(BOOL) isNonInterruptible;
 - (void) setChannelGroupMute:(int) channelGroupId mute:(BOOL) mute;
 - (BOOL) channelGroupMute:(int) channelGroupId;
@@ -191,10 +188,6 @@ typedef struct _channelGroup {
 - (ALCcontext *) openALContext;
 - (void) audioSessionInterrupted;
 - (void) audioSessionResumed;
-
-- (BOOL) _initOpenAL;
-- (ALuint) _startSound:(int) soundId channelId:(int) channelId pitchVal:(float) pitchVal panVal:(float) panVal gainVal:(float) gainVal looping:(BOOL) looping checkState:(BOOL) checkState
-;
 
 @end
 

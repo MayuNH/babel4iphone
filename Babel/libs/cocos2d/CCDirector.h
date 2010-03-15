@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2008,2009 Ricardo Quesada
+ * Copyright (C) 2008,2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -23,14 +23,17 @@
 /** Possible Pixel Formats for the EAGLView */
 typedef enum {
 	/** RGB565 pixel format. No alpha. 16-bit. (Default) */
-	kPixelFormatRGB565,
+	kCCPixelFormatRGB565,
 	/** RGBA format. 32-bit. Needed for some 3D effects. It is not as fast as the RGB565 format. */
-	kPixelFormatRGBA8888,
+	kCCPixelFormatRGBA8888,
 	/** default pixel format */
-	kPixelFormatDefault = kPixelFormatRGB565,
+	kCCPixelFormatDefault = kCCPixelFormatRGB565,
 
-	kRGB565 = kPixelFormatRGB565,
-	kRGBA8 = kPixelFormatRGBA8888,
+	// backward compatibility stuff
+	kPixelFormatRGB565 = kCCPixelFormatRGB565,
+	kRGB565 = kCCPixelFormatRGB565,
+	kPixelFormatRGBA8888 = kCCPixelFormatRGBA8888,
+	kRGBA8 = kCCPixelFormatRGBA8888,
 } tPixelFormat;
 
 /** Possible DepthBuffer Formats for the EAGLView.
@@ -38,26 +41,35 @@ typedef enum {
  */
 typedef enum {
 	/// A Depth Buffer of 0 bits will be used (default)
-	kDepthBufferNone,
+	kCCDepthBufferNone,
 	/// A depth buffer of 16 bits will be used
-	kDepthBuffer16,
+	kCCDepthBuffer16,
 	/// A depth buffer of 24 bits will be used
-	kDepthBuffer24,
+	kCCDepthBuffer24,
+	
+	// backward compatibility stuff
+	kDepthBuffer16 = kCCDepthBuffer16,
+	kDepthBuffer24 = kCCDepthBuffer24,
 } tDepthBufferFormat;
 
 /** Possible OpenGL projections used by director */
 typedef enum {
 	/// sets a 2D projection (orthogonal projection)
-	CCDirectorProjection2D,
+	kCCDirectorProjection2D,
 	
 	/// sets a 3D projection with a fovy=60, znear=0.5f and zfar=1500.
-	CCDirectorProjection3D,
+	kCCDirectorProjection3D,
 	
 	/// it does nothing. But if you are using a custom projection set it this value.
-	CCDirectorProjectionCustom,
+	kCCDirectorProjectionCustom,
 	
 	/// Detault projection is 3D projection
-	CCDirectorProjectionDefault = CCDirectorProjection3D,
+	kCCDirectorProjectionDefault = kCCDirectorProjection3D,
+	
+	// backward compatibility stuff
+	CCDirectorProjection2D = kCCDirectorProjection2D,
+	CCDirectorProjection3D = kCCDirectorProjection3D,
+	CCDirectorProjectionCustom = kCCDirectorProjectionCustom,
 
 } ccDirectorProjection;
 
@@ -72,7 +84,7 @@ typedef enum {
 	 * - It the slowest director
 	 * - The invertal update is customizable from 1 to 60
 	 */
-	CCDirectorTypeNSTimer,
+	kCCDirectorTypeNSTimer,
 	
 	/** will use a Director that triggers the main loop from a custom main loop.
 	 *
@@ -81,7 +93,7 @@ typedef enum {
 	 * - It doesn't integrate well with UIKit objecgts
 	 * - The interval update can't be customizable
 	 */
-	CCDirectorTypeMainLoop,
+	kCCDirectorTypeMainLoop,
 	
 	/** Will use a Director that triggers the main loop from a thread, but the main loop will be executed on the main thread.
 	 *
@@ -90,7 +102,7 @@ typedef enum {
 	 * - It doesn't integrate well with UIKit objecgts
 	 * - The interval update can't be customizable
 	 */
-	CCDirectorTypeThreadMainLoop,
+	kCCDirectorTypeThreadMainLoop,
 	
 	/** Will use a Director that synchronizes timers with the refresh rate of the display.
 	 *
@@ -101,23 +113,37 @@ typedef enum {
 	 * - Integrates OK with UIKit objects
 	 * - The interval update can be 1/60, 1/30, 1/15
 	 */	
-	CCDirectorTypeDisplayLink,
+	kCCDirectorTypeDisplayLink,
 	
 	/** Default director is the NSTimer directory */
-	CCDirectorTypeDefault = CCDirectorTypeNSTimer,
+	kCCDirectorTypeDefault = kCCDirectorTypeNSTimer,
+	
+	// backward compatibility stuff
+	CCDirectorTypeNSTimer = kCCDirectorTypeNSTimer,
+	CCDirectorTypeMainLoop = kCCDirectorTypeMainLoop,
+	CCDirectorTypeThreadMainLoop = kCCDirectorTypeThreadMainLoop,
+	CCDirectorTypeDisplayLink = kCCDirectorTypeDisplayLink,
+	CCDirectorTypeDefault =kCCDirectorTypeDefault,
+
 
 } ccDirectorType;
 
 /** Possible device orientations */
 typedef enum {
 	/// Device oriented vertically, home button on the bottom
-	CCDeviceOrientationPortrait = UIDeviceOrientationPortrait,	
+	kCCDeviceOrientationPortrait = UIDeviceOrientationPortrait,	
 	/// Device oriented vertically, home button on the top
-    CCDeviceOrientationPortraitUpsideDown = UIDeviceOrientationPortraitUpsideDown,
+    kCCDeviceOrientationPortraitUpsideDown = UIDeviceOrientationPortraitUpsideDown,
 	/// Device oriented horizontally, home button on the right
-    CCDeviceOrientationLandscapeLeft = UIDeviceOrientationLandscapeLeft,
+    kCCDeviceOrientationLandscapeLeft = UIDeviceOrientationLandscapeLeft,
 	/// Device oriented horizontally, home button on the left
-    CCDeviceOrientationLandscapeRight = UIDeviceOrientationLandscapeRight,
+    kCCDeviceOrientationLandscapeRight = UIDeviceOrientationLandscapeRight,
+	
+	// Backward compatibility stuff
+	CCDeviceOrientationPortrait = kCCDeviceOrientationPortrait,
+	CCDeviceOrientationPortraitUpsideDown = kCCDeviceOrientationPortraitUpsideDown,
+	CCDeviceOrientationLandscapeLeft = kCCDeviceOrientationLandscapeLeft,
+	CCDeviceOrientationLandscapeRight = kCCDeviceOrientationLandscapeRight,
 } ccDeviceOrientation;
 
 @class CCLabelAtlas;
@@ -125,11 +151,28 @@ typedef enum {
 
 /**Class that creates and handle the main Window and manages how
 and when to execute the Scenes.
+ 
+ The CCDirector is also resposible for:
+  - initializing the OpenGL ES context
+  - setting the OpenGL ES pixel format (default on is RGB565)
+  - setting the OpenGL ES buffer depth (default one is 0-bit)
+  - setting the projection (default one is 2D)
+  - setting the orientation (default one is Protrait)
+ 
+ Since the CCDirector is a singleton, the standard way to use it is by calling:
+  - [[CCDirector sharedDirector] xxxx];
+ 
+ The CCDirector also sets the default OpenGL ES context:
+  - GL_TEXTURE_2D is enabled
+  - GL_VERTEX_ARRAY is enabled
+  - GL_COLOR_ARRAY is enabled
+  - GL_TEXTURE_COORD_ARRAY is enabled
 */
 @interface CCDirector : NSObject
 {
 	EAGLView	*openGLView_;
 
+  NSBundle* loadingBundle;
 	// internal timer
 	NSTimeInterval animationInterval;
 	NSTimeInterval oldAnimationInterval;
@@ -160,7 +203,10 @@ and when to execute the Scenes.
 	
 	/* will be the next 'runningScene' in the next frame
 	 nextScene is a weak reference. */
-	CCScene *nextScene;
+	CCScene *nextScene_;
+	
+	/* If YES, then "old" scene will receive the cleanup message */
+	BOOL	sendCleanupToScene_;
 
 	/* scheduled scenes */
 	NSMutableArray *scenesStack_;
@@ -196,6 +242,13 @@ and when to execute the Scenes.
  @since v0.8.2
  */
 @property (nonatomic,readwrite) ccDirectorProjection projection;
+
+/** Whether or not the replaced scene will receive the cleanup message.
+ If the new scene is pushed, then the old scene won't receive the "cleanup" message.
+ If the new scene replaces the old one, the it will receive the "cleanup" message.
+ @since v0.99.0
+ */
+@property (nonatomic, readonly) BOOL	sendCleanupToScene;
 
 /** returns a shared instance of the director */
 +(CCDirector *)sharedDirector;
@@ -261,6 +314,12 @@ and when to execute the Scenes.
  */
 -(CGPoint) convertToUI:(CGPoint)p;
 
+// rotates the screen if Landscape mode is activated
+-(void) applyLandscape;
+
+/// XXX: missing description
+-(float) getZEye;
+
 // Scene Management
 
 /**Enters the Director's main loop with the given Scene. 
@@ -321,8 +380,7 @@ and when to execute the Scenes.
 - (void) setAlphaBlending: (BOOL) on;
 /** enables/disables OpenGL depth test */
 - (void) setDepthTest: (BOOL) on;
-/** enables/disables OpenGL texture 2D */
-- (void) setTexture2D: (BOOL) on;
+
 @end
 
 /** FastDirector is a Director that triggers the main loop as fast as possible.
@@ -372,6 +430,7 @@ and when to execute the Scenes.
 {
 	id displayLink;
 }
+-(void) preMainLoop:(id)sender;
 @end
 
 /** TimerDirector is a Director that calls the main loop from an NSTimer object

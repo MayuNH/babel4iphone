@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2009 Ricardo Quesada
+ * Copyright (C) 2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -16,6 +16,7 @@
 #import "CCSpriteSheet.h"
 #import "CCSprite.h"
 #import "CCSpriteFrame.h"
+#import "CCSpriteFrameCache.h"
 #import "CCTextureCache.h"
 #import "Support/CGPointExtension.h"
 #import "CCDrawingPrimitives.h"
@@ -29,11 +30,20 @@
 #define RENDER_IN_SUBPIXEL(__A__) ( (int)(__A__))
 #endif
 
+// XXX: Optmization
+struct transformValues_ {
+	CGPoint pos;		// position x and y
+	CGPoint	scale;		// scale x and y
+	float	rotation;
+	CGPoint ap;			// anchor point in pixels
+};
 
 @interface CCSprite (Private)
--(void)updateTextureCoords;
+-(void)updateTextureCoords:(CGRect)rect;
 -(void)updateBlendFunc;
 -(void) initAnimationDictionary;
+-(void) setTextureRect:(CGRect)rect untrimmedSize:(CGSize)size;
+-(struct transformValues_) getTransformValues;	// optimization
 @end
 
 @implementation CCSprite
@@ -42,12 +52,12 @@
 @synthesize quad = quad_;
 @synthesize atlasIndex = atlasIndex_;
 @synthesize textureRect = rect_;
-@synthesize opacity=opacity_, color=color_;
 @synthesize blendFunc = blendFunc_;
 @synthesize usesSpriteSheet = usesSpriteSheet_;
 @synthesize textureAtlas = textureAtlas_;
 @synthesize spriteSheet = spriteSheet_;
 @synthesize honorParentTransform = honorParentTransform_;
+@synthesize offsetPosition = offsetPosition_;
 
 
 +(id)spriteWithTexture:(CCTexture2D*)texture
@@ -75,69 +85,70 @@
 	return [[[self alloc] initWithFile:filename rect:rect] autorelease];
 }
 
-+(id)spriteWithFile:(NSString*)filename rect:(CGRect)rect offset:(CGPoint)offset
-{
-	return [[[self alloc] initWithFile:filename rect:rect offset:offset] autorelease];
-}
-
 +(id)spriteWithSpriteFrame:(CCSpriteFrame*)spriteFrame
 {
 	return [[[self alloc] initWithSpriteFrame:spriteFrame] autorelease];
 }
 
++(id)spriteWithSpriteFrameName:(NSString*)spriteFrameName
+{
+	CCSpriteFrame *frame = [[CCSpriteFrameCache sharedSpriteFrameCache] spriteFrameByName:spriteFrameName];
+	return [self spriteWithSpriteFrame:frame];
+}
+
+// XXX: deprecated
 +(id)spriteWithCGImage:(CGImageRef)image
 {
 	return [[[self alloc] initWithCGImage:image] autorelease];
 }
 
--(id) initWithTexture:(CCTexture2D*)texture
++(id)spriteWithCGImage:(CGImageRef)image key:(NSString*)key
 {
-	CGRect rect = CGRectZero;
-	rect.size = texture.contentSize;
-	return [self initWithTexture:texture rect:rect offset:CGPointZero];
+	return [[[self alloc] initWithCGImage:image key:key] autorelease];
 }
 
--(id) initWithTexture:(CCTexture2D*)texture rect:(CGRect)rect
++(id) spriteWithSpriteSheet:(CCSpriteSheet*)spritesheet rect:(CGRect)rect
 {
-	return [self initWithTexture:texture rect:rect offset:CGPointZero];
+	return [[[self alloc] initWithSpriteSheet:spritesheet rect:rect] autorelease];
 }
 
--(id) initWithTexture:(CCTexture2D*)texture rect:(CGRect)rect offset:(CGPoint)offset
+-(id) init
 {
-	if( (self = [super init]) )
-	{
-		dirty_ = NO;
-
+	if( (self=[super init]) ) {
+		dirty_ = recursiveDirty_ = NO;
+		
 		// by default use "Self Render".
 		// if the sprite is added to an SpriteSheet, then it will automatically switch to "SpriteSheet Render"
 		[self useSelfRender];
 		
-		// update texture
-		[self setTexture:texture];
-				
+		opacityModifyRGB_			= YES;
+		opacity_					= 255;
+		color_ = colorUnmodified_	= ccWHITE;
+		
 		blendFunc_.src = CC_BLEND_SRC;
 		blendFunc_.dst = CC_BLEND_DST;
-		[self updateBlendFunc];
+		
+		// update texture (calls updateBlendFunc)
+		[self setTexture:nil];
 		
 		// clean the Quad
 		bzero(&quad_, sizeof(quad_));
 		
 		flipY_ = flipX_ = NO;
-
+		
 		// lazy alloc
-		animations = nil;
-
+		animations_ = nil;
+		
 		// default transform anchor: center
-		anchorPoint_ = ccp( (-offset.x / rect.size.width) + 0.5f,
-						   (-offset.y / rect.size.height) + 0.5f );
-
-
+		anchorPoint_ =  ccp(0.5f, 0.5f);
+		
+		// zwoptex default values
+		offsetPosition_ = CGPointZero;
+		
 		honorParentTransform_ = CC_HONOR_PARENT_TRANSFORM_ALL;
 		hasChildren_ = NO;
-
+		
 		// Atlas: Color
-		opacity_ = 255;
-		color_ = ccWHITE;
 		ccColor4B tmpColor = {255,255,255,255};
 		quad_.bl.colors = tmpColor;
 		quad_.br.colors = tmpColor;
@@ -149,61 +160,113 @@
 		// updated in "useSelfRender"
 		
 		// Atlas: TexCoords
-		[self setTextureRect:rect];		
+		[self setTextureRect:CGRectZero];
+	}
+	
+	return self;
+}
+
+-(id) initWithTexture:(CCTexture2D*)texture rect:(CGRect)rect
+{
+	NSAssert(texture!=nil, @"Invalid texture for sprite");
+	// IMPORTANT: [self init] and not [super init];
+	if( (self = [self init]) )
+	{
+		[self setTexture:texture];
+		[self setTextureRect:rect];
 	}
 	return self;
+}
+
+-(id) initWithTexture:(CCTexture2D*)texture
+{
+	NSAssert(texture!=nil, @"Invalid texture for sprite");
+
+	CGRect rect = CGRectZero;
+	rect.size = texture.contentSize;
+	return [self initWithTexture:texture rect:rect];
 }
 
 -(id) initWithFile:(NSString*)filename
 {
+	NSAssert(filename!=nil, @"Invalid filename for sprite");
+
 	CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addImage: filename];
-	CGRect rect = CGRectZero;
-	rect.size = texture.contentSize;
-	return [self initWithTexture:texture rect:rect offset:CGPointZero];
+	if( texture ) {
+		CGRect rect = CGRectZero;
+		rect.size = texture.contentSize;
+		return [self initWithTexture:texture rect:rect];
+	}
+	return nil;
 }
 
 -(id) initWithFile:(NSString*)filename rect:(CGRect)rect
 {
-	return [self initWithFile:filename rect:rect offset:CGPointZero];
-}
+	NSAssert(filename!=nil, @"Invalid filename for sprite");
 
--(id) initWithFile:(NSString*)filename rect:(CGRect)rect offset:(CGPoint)offset
-{
-	if( (self = [super init]) ) {
-		CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addImage: filename];
-		
-		[self initWithTexture:texture rect:rect offset:offset];
-	}
-	return self;
+	CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addImage: filename];
+	if( texture )
+		return [self initWithTexture:texture rect:rect];
+	return nil;
 }
 
 - (id) initWithSpriteFrame:(CCSpriteFrame*)spriteFrame
 {
-	return [self initWithTexture:spriteFrame.texture rect:spriteFrame.rect offset:spriteFrame.offset];
+	NSAssert(spriteFrame!=nil, @"Invalid spriteFrame for sprite");
+
+	id ret = [self initWithTexture:spriteFrame.texture rect:spriteFrame.rect];
+	[self setDisplayFrame:spriteFrame];
+	return ret;
 }
 
+-(id)initWithSpriteFrameName:(NSString*)spriteFrameName
+{
+	NSAssert(spriteFrameName!=nil, @"Invalid spriteFrameName for sprite");
+
+	CCSpriteFrame *frame = [[CCSpriteFrameCache sharedSpriteFrameCache] spriteFrameByName:spriteFrameName];
+	return [self initWithSpriteFrame:frame];
+}
+
+// XXX: deprecated
 - (id) initWithCGImage: (CGImageRef)image
 {
-	if( (self = [super init]) ) {
-		// XXX: possible bug. See issue #349. New API should be added
-		NSString *key = [NSString stringWithFormat:@"%08X",(unsigned long)image];
-		CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addCGImage:image forKey:key];
-		
-		CGSize size = texture.contentSize;
-		CGRect rect = CGRectMake(0, 0, size.width, size.height );
-		
-		[self initWithTexture:texture rect:rect];
-		 
-	}
+	NSAssert(image!=nil, @"Invalid CGImageRef for sprite");
+
+	// XXX: possible bug. See issue #349. New API should be added
+	NSString *key = [NSString stringWithFormat:@"%08X",(unsigned long)image];
+	CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addCGImage:image forKey:key];
 	
-	return self;
+	CGSize size = texture.contentSize;
+	CGRect rect = CGRectMake(0, 0, size.width, size.height );
+	
+	return [self initWithTexture:texture rect:rect];
+}
+
+- (id) initWithCGImage:(CGImageRef)image key:(NSString*)key
+{
+	NSAssert(image!=nil, @"Invalid CGImageRef for sprite");
+	
+	// XXX: possible bug. See issue #349. New API should be added
+	CCTexture2D *texture = [[CCTextureCache sharedTextureCache] addCGImage:image forKey:key];
+	
+	CGSize size = texture.contentSize;
+	CGRect rect = CGRectMake(0, 0, size.width, size.height );
+	
+	return [self initWithTexture:texture rect:rect];
+}
+
+-(id) initWithSpriteSheet:(CCSpriteSheet*)spritesheet rect:(CGRect)rect
+{
+	id ret = [self initWithTexture:spritesheet.texture rect:rect];
+	[self useSpriteSheetRender:spritesheet];
+	return ret;
 }
 
 - (NSString*) description
 {
 	return [NSString stringWithFormat:@"<%@ = %08X | Rect = (%.2f,%.2f,%.2f,%.2f) | tag = %i | atlasIndex = %i>", [self class], self,
 			rect_.origin.x, rect_.origin.y, rect_.size.width, rect_.size.height,
-			tag,
+			tag_,
 			atlasIndex_
 	];
 }
@@ -211,7 +274,7 @@
 - (void) dealloc
 {
 	[texture_ release];
-	[animations release];
+	[animations_ release];
 	[super dealloc];
 }
 
@@ -221,12 +284,12 @@
 	usesSpriteSheet_ = NO;
 	textureAtlas_ = nil;
 	spriteSheet_ = nil;
-	dirty_ = NO;
+	dirty_ = recursiveDirty_ = NO;
 	
-	float x1 = 0;
-	float y1 = 0;
+	float x1 = 0 + offsetPosition_.x;
+	float y1 = 0 + offsetPosition_.y;
 	float x2 = x1 + rect_.size.width;
-	float y2 = y1 + rect_.size.height;		
+	float y2 = y1 + rect_.size.height;
 	quad_.bl.vertices = (ccVertex3F) { x1, y1, 0 };
 	quad_.br.vertices = (ccVertex3F) { x2, y1, 0 };
 	quad_.tl.vertices = (ccVertex3F) { x1, y2, 0 };
@@ -243,62 +306,55 @@
 
 -(void) initAnimationDictionary
 {
-	animations = [[NSMutableDictionary dictionaryWithCapacity:2] retain];
+	animations_ = [[NSMutableDictionary alloc] initWithCapacity:2];
 }
 
--(void)setTextureRect:(CGRect) rect
+-(void)setTextureRect:(CGRect)rect
 {
-	BOOL updateVertex = NO;
+	[self setTextureRect:rect untrimmedSize:rect.size];
+}
 
-	if( (rect.size.width != rect_.size.width) || (rect.size.height != rect_.size.height) )
-		updateVertex = YES;
-		
+-(void)setTextureRect:(CGRect)rect untrimmedSize:(CGSize)untrimmedSize
+{
 	rect_ = rect;
 
-	[self updateTextureCoords];
+	[self setContentSize:untrimmedSize];
+	[self updateTextureCoords:rect];
 	
 	// rendering using SpriteSheet
 	if( usesSpriteSheet_ ) {
-		// Don't update Atlas if index == CCSpriteIndexNotInitialized. issue #283
-		if( atlasIndex_ != CCSpriteIndexNotInitialized)
-			[textureAtlas_ updateQuad:&quad_ atIndex:atlasIndex_];
-
-		if( ! CGSizeEqualToSize(rect.size, contentSize_))  {
-			[self setContentSize:rect.size];
-			dirty_ = YES;
-		}
+		// update dirty_, don't update recursiveDirty_
+		dirty_ = YES;
 	}
+
 	// self rendering
 	else
 	{
-		if( updateVertex ) {
-			// Atlas: Vertex
-			float x1 = 0;
-			float y1 = 0;
-			float x2 = x1 + rect.size.width;
-			float y2 = y1 + rect.size.height;		
-			quad_.bl.vertices = (ccVertex3F) { x1, y1, 0 };
-			quad_.br.vertices = (ccVertex3F) { x2, y1, 0 };
-			quad_.tl.vertices = (ccVertex3F) { x1, y2, 0 };
-			quad_.tr.vertices = (ccVertex3F) { x2, y2, 0 };			
-		}
+		// Atlas: Vertex
+		float x1 = 0 + offsetPosition_.x;
+		float y1 = 0 + offsetPosition_.y;
+		float x2 = x1 + rect.size.width;
+		float y2 = y1 + rect.size.height;
 		
-		if( ! CGSizeEqualToSize(rect.size, contentSize_))  {
-			[self setContentSize:rect.size];
-		}		
+		// Don't update Z.
+		quad_.bl.vertices = (ccVertex3F) { x1, y1, 0 };
+		quad_.br.vertices = (ccVertex3F) { x2, y1, 0 };
+		quad_.tl.vertices = (ccVertex3F) { x1, y2, 0 };
+		quad_.tr.vertices = (ccVertex3F) { x2, y2, 0 };			
 	}
+			
 }
 
--(void)updateTextureCoords
+-(void)updateTextureCoords:(CGRect)rect
 {
 	
 	float atlasWidth = texture_.pixelsWide;
 	float atlasHeight = texture_.pixelsHigh;
 
-	float left = rect_.origin.x / atlasWidth;
-	float right = (rect_.origin.x + rect_.size.width) / atlasWidth;
-	float top = rect_.origin.y / atlasHeight;
-	float bottom = (rect_.origin.y + rect_.size.height) / atlasHeight;
+	float left = rect.origin.x / atlasWidth;
+	float right = (rect.origin.x + rect.size.width) / atlasWidth;
+	float top = rect.origin.y / atlasHeight;
+	float bottom = (rect.origin.y + rect.size.height) / atlasHeight;
 
 	
 	if( flipX_)
@@ -319,122 +375,115 @@
 -(void)updateTransform
 {
 	NSAssert( usesSpriteSheet_, @"updateTransform is only valid when CCSprite is being renderd using an CCSpriteSheet");
-	
-	float newScaleX = scaleX_;
-	float newScaleY = scaleY_;
-	CGPoint newPosition = position_;
-	float newRotation_radians = -CC_DEGREES_TO_RADIANS(rotation_);
-	
-	// optimization. If parent is spritesheet, no need to do Affine transforms
-	if( parent != spriteSheet_ ) {
-		
-		CGAffineTransform old = CGAffineTransformIdentity;
 
-		newScaleX = newScaleY = 1;
+	CGAffineTransform matrix;
+	
+	
+	// Optimization: if it is not visible, then do nothing
+	if( ! visible_ ) {		
+		quad_.br.vertices = quad_.tl.vertices = quad_.tr.vertices = quad_.bl.vertices = (ccVertex3F){0,0,0};
+		[textureAtlas_ updateQuad:&quad_ atIndex:atlasIndex_];
+		dirty_ = recursiveDirty_ = NO;
+		return ;
+	}
+	
+
+	// Optimization: If parent is spritesheet, or parent is nil
+	// build Affine transform manually
+	if( ! parent_ || parent_ == spriteSheet_ ) {
+		
+		float radians = -CC_DEGREES_TO_RADIANS(rotation_);
+		float c = cosf(radians);
+		float s = sinf(radians);
+		
+		matrix = CGAffineTransformMake( c * scaleX_,  s * scaleX_,
+									   -s * scaleY_, c * scaleY_,
+									   position_.x, position_.y);
+		matrix = CGAffineTransformTranslate(matrix, -anchorPointInPixels_.x, -anchorPointInPixels_.y);		
+	} 
+	
+	// else do affine transformation according to the HonorParentTransform
+	else if( parent_ != spriteSheet_ ) {
+
+		matrix = CGAffineTransformIdentity;
 		ccHonorParentTransform prevHonor = CC_HONOR_PARENT_TRANSFORM_ALL;
 		
 		for (CCNode *p = self ; p && p != spriteSheet_; p = p.parent) {
 			
-			CGPoint pos = p.position;
-			float	rot = p.rotation;
-			float	sx = p.scaleX;
-			float	sy = p.scaleY;
-			CGAffineTransform new = CGAffineTransformIdentity;
+			struct transformValues_ tv = [(CCSprite*)p getTransformValues];
 			
+			CGAffineTransform newMatrix = CGAffineTransformIdentity;
+			
+			// 2nd: Translate, Rotate, Scale
 			if( prevHonor & CC_HONOR_PARENT_TRANSFORM_TRANSLATE )
-				new = CGAffineTransformTranslate(new, pos.x, pos.y);
+				newMatrix = CGAffineTransformTranslate(newMatrix, tv.pos.x, tv.pos.y);
 			if( prevHonor & CC_HONOR_PARENT_TRANSFORM_ROTATE )
-				new = CGAffineTransformRotate(new, -CC_DEGREES_TO_RADIANS(rot));
+				newMatrix = CGAffineTransformRotate(newMatrix, -CC_DEGREES_TO_RADIANS(tv.rotation));
 			if( prevHonor & CC_HONOR_PARENT_TRANSFORM_SCALE ) {
-				new = CGAffineTransformScale(new, sx, sy);
-				newScaleX *= [p scaleX];
-				newScaleY *= [p scaleY];
+				newMatrix = CGAffineTransformScale(newMatrix, tv.scale.x, tv.scale.y);
 			}
 			
-			old = CGAffineTransformConcat( old, new);
+			// 3rd: Translate anchor point
+			newMatrix = CGAffineTransformTranslate(newMatrix, -tv.ap.x, -tv.ap.y);
+
+			// 4th: Matrix multiplication
+			matrix = CGAffineTransformConcat( matrix, newMatrix);
 			
 			prevHonor = [(CCSprite*)p honorParentTransform];
-		}
-		
-		newPosition = ccp( old.tx, old.ty);
-		newRotation_radians = -atan2f( old.c, old.a );
+		}		
 	}
 	
-		
-	// algorithm from pyglet ( http://www.pyglet.org ) 
-
-	// if not visible
-	// then everything is 0
-	if( ! visible ) {		
-		quad_.br.vertices = quad_.tl.vertices = quad_.tr.vertices = quad_.bl.vertices = (ccVertex3F){0,0,0};
-
-	}
+	//
+	// calculate the Quad based on the Affine Matrix
+	//
 	
-	// rotation ? -> update: rotation, scale, position
-	else if( newRotation_radians ) {
-		float x1 = -transformAnchor_.x * newScaleX;
-		float y1 = -transformAnchor_.y * newScaleY;
+	CGSize size = rect_.size;
 
-		float x2 = x1 + rect_.size.width * newScaleX;
-		float y2 = y1 + rect_.size.height * newScaleY;
-		float x = newPosition.x;
-		float y = newPosition.y;
-		
-		float r = newRotation_radians;
-		float cr = cosf(r);
-		float sr = sinf(r);
-		float ax = x1 * cr - y1 * sr + x;
-		float ay = x1 * sr + y1 * cr + y;
-		float bx = x2 * cr - y1 * sr + x;
-		float by = x2 * sr + y1 * cr + y;
-		float cx = x2 * cr - y2 * sr + x;
-		float cy = x2 * sr + y2 * cr + y;
-		float dx = x1 * cr - y2 * sr + x;
-		float dy = x1 * sr + y2 * cr + y;
-		quad_.bl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(ax), RENDER_IN_SUBPIXEL(ay), vertexZ_ };
-		quad_.br.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(bx), RENDER_IN_SUBPIXEL(by), vertexZ_ };
-		quad_.tl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(dx), RENDER_IN_SUBPIXEL(dy), vertexZ_ };
-		quad_.tr.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(cx), RENDER_IN_SUBPIXEL(cy), vertexZ_ };
-		
-	}
+	float x1 = offsetPosition_.x;
+	float y1 = offsetPosition_.y;
 	
-	// scale ? -> update: scale, position
-	else if(newScaleX != 1 || newScaleY != 1)
-	{
-		float x = newPosition.x;
-		float y = newPosition.y;
-		
-		float x1 = (x- transformAnchor_.x * newScaleX);
-		float y1 = (y- transformAnchor_.y * newScaleY);
-		float x2 = (x1 + rect_.size.width * newScaleX);
-		float y2 = (y1 + rect_.size.height * newScaleY);
-
-		quad_.bl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x1), RENDER_IN_SUBPIXEL(y1), vertexZ_ };
-		quad_.br.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x2), RENDER_IN_SUBPIXEL(y1), vertexZ_ };
-		quad_.tl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x1), RENDER_IN_SUBPIXEL(y2), vertexZ_ };
-		quad_.tr.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x2), RENDER_IN_SUBPIXEL(y2), vertexZ_ };
-		
-	}
+	float x2 = x1 + size.width;
+	float y2 = y1 + size.height;
+	float x = matrix.tx;
+	float y = matrix.ty;
 	
-	// update position
-	else {
-		float x = newPosition.x;
-		float y = newPosition.y;
-		
-		float x1 = (x-transformAnchor_.x);
-		float y1 = (y-transformAnchor_.y);
-		float x2 = (x1 + rect_.size.width);
-		float y2 = (y1 + rect_.size.height);
-
-		quad_.bl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x1), RENDER_IN_SUBPIXEL(y1), vertexZ_ };
-		quad_.br.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x2), RENDER_IN_SUBPIXEL(y1), vertexZ_ };
-		quad_.tl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x1), RENDER_IN_SUBPIXEL(y2), vertexZ_ };
-		quad_.tr.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(x2), RENDER_IN_SUBPIXEL(y2), vertexZ_ };
-		
-	}
+	float cr = matrix.a;
+	float sr = matrix.b;
+	float cr2 = matrix.d;
+	float sr2 = -matrix.c;
+	float ax = x1 * cr - y1 * sr2 + x;
+	float ay = x1 * sr + y1 * cr2 + y;
 	
+	float bx = x2 * cr - y1 * sr2 + x;
+	float by = x2 * sr + y1 * cr2 + y;
+	
+	float cx = x2 * cr - y2 * sr2 + x;
+	float cy = x2 * sr + y2 * cr2 + y;
+	
+	float dx = x1 * cr - y2 * sr2 + x;
+	float dy = x1 * sr + y2 * cr2 + y;
+	
+	quad_.bl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(ax), RENDER_IN_SUBPIXEL(ay), vertexZ_ };
+	quad_.br.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(bx), RENDER_IN_SUBPIXEL(by), vertexZ_ };
+	quad_.tl.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(dx), RENDER_IN_SUBPIXEL(dy), vertexZ_ };
+	quad_.tr.vertices = (ccVertex3F) { RENDER_IN_SUBPIXEL(cx), RENDER_IN_SUBPIXEL(cy), vertexZ_ };
+		
 	[textureAtlas_ updateQuad:&quad_ atIndex:atlasIndex_];
-	dirty_ = NO;
+	dirty_ = recursiveDirty_ = NO;
+}
+
+// XXX: Optimization: instead of calling 5 times the parent sprite to obtain: position, scale.x, scale.y, anchorpoint and rotation,
+// this fuction return the 5 values in 1 single call
+-(struct transformValues_) getTransformValues
+{
+	struct transformValues_ tv;
+	tv.pos = position_;
+	tv.scale.x = scaleX_;
+	tv.scale.y = scaleY_;
+	tv.rotation = rotation_;
+	tv.ap = anchorPointInPixels_;
+	
+	return tv;
 }
 
 #pragma mark CCSprite - draw
@@ -443,43 +492,47 @@
 {	
 	NSAssert(!usesSpriteSheet_, @"If CCSprite is being rendered by CCSpriteSheet, CCSprite#draw SHOULD NOT be called");
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnable(GL_TEXTURE_2D);
-	
+	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
+	// Needed states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
+	// Unneeded states: -
+
 	BOOL newBlend = NO;
 	if( blendFunc_.src != CC_BLEND_SRC || blendFunc_.dst != CC_BLEND_DST ) {
 		newBlend = YES;
 		glBlendFunc( blendFunc_.src, blendFunc_.dst );
 	}
 
-#define kPointSize sizeof(quad_.bl)
+#define kQuadSize sizeof(quad_.bl)
 	glBindTexture(GL_TEXTURE_2D, [texture_ name]);
 	
 	int offset = (int)&quad_;
 	
 	// vertex
 	int diff = offsetof( ccV3F_C4B_T2F, vertices);
-	glVertexPointer(3, GL_FLOAT, kPointSize, (void*) (offset + diff) );
+	glVertexPointer(3, GL_FLOAT, kQuadSize, (void*) (offset + diff) );
 	
 	// color
 	diff = offsetof( ccV3F_C4B_T2F, colors);
-	glColorPointer(4, GL_UNSIGNED_BYTE, kPointSize, (void*)(offset + diff));
+	glColorPointer(4, GL_UNSIGNED_BYTE, kQuadSize, (void*)(offset + diff));
 	
 	// tex coords
 	diff = offsetof( ccV3F_C4B_T2F, texCoords);
-	glTexCoordPointer(2, GL_FLOAT, kPointSize, (void*)(offset + diff));
+	glTexCoordPointer(2, GL_FLOAT, kQuadSize, (void*)(offset + diff));
 	
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	
 	if( newBlend )
 		glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
 	
-	glDisable(GL_TEXTURE_2D);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);	
+#if CC_SPRITE_DEBUG_DRAW
+	CGSize s = [self contentSize];
+	CGPoint vertices[4]={
+		ccp(0,0),ccp(s.width,0),
+		ccp(s.width,s.height),ccp(0,s.height),
+	};
+	ccDrawPoly(vertices, 4, YES);
+#endif // CC_TEXTURENODE_DEBUG_DRAW
+	
 }
 
 #pragma mark CCSprite - CCNode overrides
@@ -506,7 +559,7 @@
 -(void) reorderChild:(CCSprite*)child z:(int)z
 {
 	if( usesSpriteSheet_ ) {
-		NSAssert(YES,@"reorderChild not implemented while using Spritesheet. Please open a bug, and if possible attach the patch. Thanks");
+		NSAssert(NO,@"reorderChild not implemented while using Spritesheet. Please open a bug, and if possible attach the patch. Thanks");
 	}
 
 	[super reorderChild:child z:z];
@@ -519,13 +572,13 @@
 
 	[super removeChild:sprite cleanup:doCleanup];
 	
-	hasChildren_ = ( [children count] > 0 );
+	hasChildren_ = ( [children_ count] > 0 );
 }
 
 -(void)removeAllChildrenWithCleanup:(BOOL)doCleanup
 {
 	if( usesSpriteSheet_ ) {
-		for( CCSprite *child in children )
+		for( CCSprite *child in children_ )
 			[spriteSheet_ removeSpriteFromAtlas:child];
 	}
 	
@@ -543,21 +596,21 @@
 
 -(void) setDirtyRecursively:(BOOL)b
 {
-	dirty_ = b;
+	dirty_ = recursiveDirty_ = b;
 	// recursively set dirty
 	if( hasChildren_ ) {
-		for( CCSprite *child in children)
+		for( CCSprite *child in children_)
 			[child setDirtyRecursively:YES];
 	}
 }
 
 // XXX HACK: optimization
-#define SET_DIRTY_RECURSIVELY() {							\
-					if( usesSpriteSheet_ && ! dirty_ ) {	\
-						dirty_ = YES;						\
-						if( hasChildren_)					\
-							[self setDirtyRecursively:YES];	\
-						}									\
+#define SET_DIRTY_RECURSIVELY() {									\
+					if( usesSpriteSheet_ && ! recursiveDirty_ ) {	\
+						dirty_ = recursiveDirty_ = YES;				\
+						if( hasChildren_)							\
+							[self setDirtyRecursively:YES];			\
+						}											\
 					}
 
 -(void)setPosition:(CGPoint)pos
@@ -605,20 +658,26 @@
 -(void)setRelativeAnchorPoint:(BOOL)relative
 {
 	NSAssert( ! usesSpriteSheet_, @"relativeTransformAnchor is invalid in CCSprite");
-	[super setRelativeAnchorPoint:relative];
+	[super setIsRelativeAnchorPoint:relative];
 }
 
 -(void)setVisible:(BOOL)v
 {
-	[super setVisible:v];
-	SET_DIRTY_RECURSIVELY();
+	if( v != visible_ ) {
+		[super setVisible:v];
+		if( usesSpriteSheet_ && ! recursiveDirty_ ) {
+			dirty_ = recursiveDirty_ = YES;
+			for( id child in children_)
+				[child setVisible:v];
+		}
+	}
 }
 
 -(void)setFlipX:(BOOL)b
 {
 	if( flipX_ != b ) {
 		flipX_ = b;
-		[self setTextureRect:rect_];
+		[self setTextureRect:rect_];	
 	}
 }
 -(BOOL) flipX
@@ -630,7 +689,7 @@
 {
 	if( flipY_ != b ) {
 		flipY_ = b;	
-		[self setTextureRect:rect_];
+		[self setTextureRect:rect_];	
 	}	
 }
 -(BOOL) flipY
@@ -644,52 +703,68 @@
 #pragma mark CCSprite - RGBA protocol
 -(void) updateColor
 {
+	ccColor4B color4 = {color_.r, color_.g, color_.b, opacity_ };
+	
+	quad_.bl.colors = color4;
+	quad_.br.colors = color4;
+	quad_.tl.colors = color4;
+	quad_.tr.colors = color4;
+	
 	// renders using Sprite Manager
 	if( usesSpriteSheet_ ) {
 		if( atlasIndex_ != CCSpriteIndexNotInitialized)
 			[textureAtlas_ updateQuad:&quad_ atIndex:atlasIndex_];
 		else
 			// no need to set it recursively
+			// update dirty_, don't update recursiveDirty_
 			dirty_ = YES;
 	}
 	// self render
 	// do nothing
 }
 
+-(GLubyte) opacity
+{
+	return opacity_;
+}
+
 -(void) setOpacity:(GLubyte) anOpacity
 {
-	opacity_ = anOpacity;
-	
+	opacity_			= anOpacity;
+
 	// special opacity for premultiplied textures
 	if( opacityModifyRGB_ )
-		color_.r = color_.g = color_.b = opacity_;
-
-	ccColor4B color4 = {color_.r, color_.g, color_.b, opacity_ };
-
-	quad_.bl.colors = color4;
-	quad_.br.colors = color4;
-	quad_.tl.colors = color4;
-	quad_.tr.colors = color4;
-
+		[self setColor: (opacityModifyRGB_ ? colorUnmodified_ : color_ )];
+	
 	[self updateColor];
+}
+
+- (ccColor3B) color
+{
+	if(opacityModifyRGB_){
+		return colorUnmodified_;
+	}
+	return color_;
 }
 
 -(void) setColor:(ccColor3B)color3
 {
-	color_ = color3;
+	color_ = colorUnmodified_ = color3;
 	
-	ccColor4B color4 = {color_.r, color_.g, color_.b, opacity_ };
-	quad_.bl.colors = color4;
-	quad_.br.colors = color4;
-	quad_.tl.colors = color4;
-	quad_.tr.colors = color4;
+	if( opacityModifyRGB_ ){
+		color_.r = color3.r * opacity_/255;
+		color_.g = color3.g * opacity_/255;
+		color_.b = color3.b * opacity_/255;
+	}
 	
 	[self updateColor];
 }
 
 -(void) setOpacityModifyRGB:(BOOL)modify
 {
-	opacityModifyRGB_ = modify;
+	ccColor3B oldColor	= self.color;
+	opacityModifyRGB_	= modify;
+	self.color			= oldColor;
 }
 
 -(BOOL) doesOpacityModifyRGB
@@ -701,32 +776,31 @@
 // CCFrameProtocol protocol
 //
 #pragma mark CCSprite - CCFrameProtocol protocol
--(void) setDisplayFrame:(id)newFrame
+
+-(void) setDisplayFrame:(CCSpriteFrame*)frame
 {
-	CCSpriteFrame *frame = (CCSpriteFrame*)newFrame;
-
-	// update anchor point
-	anchorPoint_ = ccp( (- frame.offset.x / frame.rect.size.width) + 0.5f,
-					   ( - frame.offset.y / frame.rect.size.height) + 0.5f );
+	offsetPosition_ = frame.offset;
 	
-	// update rect
-	CGRect rect = [frame rect];
-	[self setTextureRect: rect];
-	
-	[self setFlipX: [frame flipX]];
-	[self setFlipY: [frame flipY]];
+	CGRect rect = frame.rect;
+	CGSize origSize = frame.originalSize;
+	offsetPosition_.x += (origSize.width - rect.size.width) / 2;
+	offsetPosition_.y += (origSize.height - rect.size.height) / 2;
 
-	// update texture
+	// update texture before updating texture rect
 	if ( frame.texture.name != self.texture.name )
 		[self setTexture: frame.texture];
+	
+	// update rect
+	[self setTextureRect:frame.rect untrimmedSize:frame.originalSize];
+	
 }
 
 -(void) setDisplayFrame: (NSString*) animationName index:(int) frameIndex
 {
-	if( ! animations )
+	if( ! animations_ )
 		[self initAnimationDictionary];
 	
-	CCAnimation *a = [animations objectForKey: animationName];
+	CCAnimation *a = [animations_ objectForKey: animationName];
 	CCSpriteFrame *frame = [[a frames] objectAtIndex:frameIndex];
 	
 	NSAssert( frame, @"CCSprite#setDisplayFrame. Invalid frame");
@@ -734,15 +808,16 @@
 	[self setDisplayFrame:frame];
 }
 
--(BOOL) isFrameDisplayed:(id)frame 
+-(BOOL) isFrameDisplayed:(CCSpriteFrame*)frame 
 {
-	CCSpriteFrame *spr = (CCSpriteFrame*)frame;
-	CGRect r = [spr rect];
+	CGRect r = [frame rect];
+	CGPoint p = [frame offset];
 	return ( CGRectEqualToRect(r, rect_) &&
-			spr.texture.name == self.texture.name);
+			frame.texture.name == self.texture.name &&
+			CGPointEqualToPoint(p, offsetPosition_));
 }
 
--(id) displayFrame
+-(CCSpriteFrame*) displayedFrame
 {
 	return [CCSpriteFrame frameWithTexture:self.texture rect:rect_ offset:CGPointZero];
 }
@@ -750,16 +825,16 @@
 -(void) addAnimation: (id<CCAnimationProtocol>) anim
 {
 	// lazy alloc
-	if( ! animations )
+	if( ! animations_ )
 		[self initAnimationDictionary];
 	
-	[animations setObject:anim forKey:[anim name]];
+	[animations_ setObject:anim forKey:[anim name]];
 }
 
 -(id<CCAnimationProtocol>)animationByName: (NSString*) animationName
 {
 	NSAssert( animationName != nil, @"animationName parameter must be non nil");
-    return [animations objectForKey:animationName];
+    return [animations_ objectForKey:animationName];
 }
 
 #pragma mark CCSprite - CocosNodeTexture protocol
@@ -768,17 +843,24 @@
 {
 	NSAssert( ! usesSpriteSheet_, @"CCSprite: updateBlendFunc doesn't work when the sprite is rendered using a CCSpriteSheet");
 
-	if( ! [texture_ hasPremultipliedAlpha] ) {
+	// it's possible to have an untextured sprite
+	if( !texture_ || ! [texture_ hasPremultipliedAlpha] ) {
 		blendFunc_.src = GL_SRC_ALPHA;
 		blendFunc_.dst = GL_ONE_MINUS_SRC_ALPHA;
+		[self setOpacityModifyRGB:NO];
+	} else {
+		blendFunc_.src = CC_BLEND_SRC;
+		blendFunc_.dst = CC_BLEND_DST;
+		[self setOpacityModifyRGB:YES];
 	}
-	
-	opacityModifyRGB_ = [texture_ hasPremultipliedAlpha];
 }
 
 -(void) setTexture:(CCTexture2D*)texture
 {
 	NSAssert( ! usesSpriteSheet_, @"CCSprite: setTexture doesn't work when the sprite is rendered using a CCSpriteSheet");
+	
+	// accept texture==nil as argument
+	NSAssert( !texture || [texture isKindOfClass:[CCTexture2D class]], @"setTexture expects a CCTexture2D. Invalid argument");
 
 	[texture_ release];
 	texture_ = [texture retain];

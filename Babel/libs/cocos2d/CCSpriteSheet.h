@@ -17,6 +17,7 @@
 #import "CCProtocols.h"
 #import "CCTextureAtlas.h"
 #import "ccMacros.h"
+#import "Support/ccArray.h"
 
 #pragma mark CCSpriteSheet
 
@@ -35,12 +36,10 @@
 {
 	CCTextureAtlas	*textureAtlas_;
 	ccBlendFunc		blendFunc_;
-	
-	// set of sprites that needs to be udpated before drawing
-//	NSMutableArray	*dirtySprites_;
-	
+
 	// all descendants: chlidren, gran children, etc...
 	NSMutableArray	*descendants_;
+//	ccArray			*descendants_;
 }
 
 /** returns the TextureAtlas that is used */
@@ -49,8 +48,8 @@
 /** conforms to CCTextureProtocol protocol */
 @property (nonatomic,readwrite) ccBlendFunc blendFunc;
 
-/** set of sprites that needs to be updated before the rendering */
-//@property (nonatomic,readonly) NSMutableArray *dirtySprites;
+/** descendants (children, gran children, etc) */
+@property (nonatomic,readonly) NSMutableArray *descendants;
 
 /** creates a CCSpriteSheet with a texture2d */
 +(id)spriteSheetWithTexture:(CCTexture2D *)tex;
@@ -79,17 +78,19 @@
    - create an standard CCSsprite
    - set the usingSpriteSheet = YES
    - set the textureAtlas to the same texture Atlas as the CCSpriteSheet
+ @deprecated Use [CCSprite spriteWithSpriteSheet:rect] instead;
  */
--(CCSprite*) createSpriteWithRect:(CGRect)rect;
+-(CCSprite*) createSpriteWithRect:(CGRect)rect __attribute__((deprecated));
 
 /** initializes a previously created sprite with a rect. This sprite will have the same texture as the CCSpriteSheet.
  It's the same as:
  - initialize an standard CCSsprite
  - set the usingSpriteSheet = YES
  - set the textureAtlas to the same texture Atlas as the CCSpriteSheet
- @since v0.9.0
+ @since v0.99.0
+ @deprecated Use [CCSprite initWithSpriteSheet:rect] instead;
 */ 
--(void) initSprite:(CCSprite*)sprite rect:(CGRect)rect;
+-(void) initSprite:(CCSprite*)sprite rect:(CGRect)rect __attribute__((deprecated));
 
 /** removes a child given a certain index. It will also cleanup the running actions depending on the cleanup parameter.
  @warning Removing a child from a CCSpriteSheet is very slow
@@ -103,9 +104,6 @@
 
 -(void) insertChild:(CCSprite*)child inAtlasAtIndex:(NSUInteger)index;
 -(void) removeSpriteFromAtlas:(CCSprite*)sprite;
--(void) reorderSpriteInAtlas:(CCSprite*)sprite;
-
-//-(void) tagSpriteAsDirty:(CCSprite*)sprite;
 
 -(NSUInteger) rebuildIndexInOrder:(CCSprite*)parent atlasIndex:(NSUInteger)index;
 -(NSUInteger) atlasIndexForChild:(CCSprite*)sprite atZ:(int)z;

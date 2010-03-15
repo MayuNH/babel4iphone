@@ -13,8 +13,8 @@
  */
 
 #import "CCRenderTexture.h"
-#import "cocos2d.h"
-#include "glu.h"
+#import "CCDirector.h"
+#import "ccMacros.h"
 
 @implementation CCRenderTexture
 
@@ -22,8 +22,7 @@
 
 +(id)renderTextureWithWidth:(int)w height:(int)h
 {
-  self = [[[CCRenderTexture alloc] initWithWidth:w height:h] autorelease];
-  return self;
+	return [[[self alloc] initWithWidth:w height:h] autorelease];
 }
 
 -(id)initWithWidth:(int)w height:(int)h
@@ -32,14 +31,14 @@
 	if (self)
 	{
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &oldFBO);
-		Texture2DPixelFormat format = kTexture2DPixelFormat_RGBA8888;  
+		CCTexture2DPixelFormat format = kCCTexture2DPixelFormat_RGBA8888;  
 		// textures must be power of two squared
 		int pow = 8;
 		while (pow < w || pow < h) pow*=2;
     
 		void *data = malloc((int)(pow * pow * 4));
 		memset(data, 0, (int)(pow * pow * 4));
-		texture = [[[CCTexture2D alloc] initWithData:data pixelFormat:format pixelsWide:pow pixelsHigh:pow contentSize:CGSizeMake(w, h)] autorelease];
+		texture = [[CCTexture2D alloc] initWithData:data pixelFormat:format pixelsWide:pow pixelsHigh:pow contentSize:CGSizeMake(w, h)];
 		free( data );
     
 		// generate FBO
@@ -53,9 +52,10 @@
 		GLuint status = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
 		if (status != GL_FRAMEBUFFER_COMPLETE_OES)
 		{
-		  [NSException raise:@"Render Texture" format:@"Could not attach texture to framebuffer"];
+			[NSException raise:@"Render Texture" format:@"Could not attach texture to framebuffer"];
 		}
 		sprite = [CCSprite spriteWithTexture:texture];
+		[texture release];
 		[sprite setScaleY:-1];
 		[self addChild:sprite];
 		glBindFramebufferOES(GL_FRAMEBUFFER_OES, oldFBO);
@@ -65,27 +65,32 @@
 
 -(void)dealloc
 {
-	[self removeAllChildrenWithCleanup:YES];
+//	[self removeAllChildrenWithCleanup:YES];
 	glDeleteFramebuffersOES(1, &fbo);
 	[super dealloc];
 }
 
 -(void)begin
 {
+	CC_DISABLE_DEFAULT_GL_STATES();
 	// Save the current matrix
 	glPushMatrix();
+	
+	CGSize texSize = [texture contentSize];
 
 	// Calculate the adjustment ratios based on the old and new projections
-	float widthRatio = [[CCDirector sharedDirector] openGLView].frame.size.width / texture.contentSize.width;
-	float heightRatio = [[CCDirector sharedDirector] openGLView].frame.size.height / texture.contentSize.height;
+	CGRect frame = [[[CCDirector sharedDirector] openGLView] frame];
+	float widthRatio = frame.size.width / texSize.width;
+	float heightRatio = frame.size.height / texSize.height;
 
 	// Adjust the orthographic propjection and viewport
 	glOrthof((float)-1.0 / widthRatio,  (float)1.0 / widthRatio, (float)-1.0 / heightRatio, (float)1.0 / heightRatio, -1,1);
-	glViewport(0, 0, texture.contentSize.width, texture.contentSize.height);
+	glViewport(0, 0, texSize.width, texSize.height);
 
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &oldFBO);
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, fbo);//Will direct drawing to the frame buffer created above
-	glDisable(GL_DITHER);
+	
+	CC_ENABLE_DEFAULT_GL_STATES();	
 }
 
 -(void)end
@@ -93,14 +98,16 @@
 	glBindFramebufferOES(GL_FRAMEBUFFER_OES, oldFBO);
 	// Restore the original matrix and viewport
 	glPopMatrix();
-	glViewport(0, 0, [[CCDirector sharedDirector] openGLView].frame.size.width, [[CCDirector sharedDirector] openGLView].frame.size.height);
+	CGRect frame = [[[CCDirector sharedDirector] openGLView] frame];
+	glViewport(0, 0, frame.size.width, frame.size.height);
+
+	glColorMask(TRUE, TRUE, TRUE, TRUE);
 }
 
 
 -(void)clear:(float)r g:(float)g b:(float)b a:(float)a
 {
 	[self begin];
-	glColorMask(TRUE, TRUE, TRUE, TRUE);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColorMask(TRUE, TRUE, TRUE, FALSE);
@@ -142,10 +149,18 @@
 	int bytesPerRow					= bytesPerPixel * tx;
 	NSInteger myDataLength			= bytesPerRow * ty;
   
-	unsigned char buffer[myDataLength];
-  
+	NSMutableData *buffer	= [[NSMutableData alloc] initWithCapacity:myDataLength];
+	NSMutableData *pixels	= [[NSMutableData alloc] initWithCapacity:myDataLength];
+
+	if( ! (buffer && pixels) ) {
+		CCLOG(@"cocos2d: CCRenderTexture#getUIImageFromBuffer: not enough memory");
+		[buffer release];
+		[pixels release];
+		return nil;
+	}
+
 	[self begin];
-	glReadPixels(0,0,tx,ty,GL_RGBA,GL_UNSIGNED_BYTE, &buffer);
+	glReadPixels(0,0,tx,ty,GL_RGBA,GL_UNSIGNED_BYTE, [buffer mutableBytes]);
 	[self end];
 	/*
 	 CGImageCreate(size_t width, size_t height,
@@ -157,7 +172,7 @@
 	// make data provider with data.
   
 	CGBitmapInfo bitmapInfo			= kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault;
-	CGDataProviderRef provider		= CGDataProviderCreateWithData(NULL, buffer, myDataLength, NULL);
+	CGDataProviderRef provider		= CGDataProviderCreateWithData(NULL, [buffer mutableBytes], myDataLength, NULL);
 	CGColorSpaceRef colorSpaceRef	= CGColorSpaceCreateDeviceRGB();
 	CGImageRef iref					= CGImageCreate(tx, ty,
                                           bitsPerComponent, bitsPerPixel, bytesPerRow,
@@ -182,8 +197,7 @@
 	 size_t height, size_t bitsPerComponent, size_t bytesPerRow,
 	 CGColorSpaceRef colorspace, CGBitmapInfo bitmapInfo)
 	 */
-	uint32_t* pixels				= (uint32_t *)malloc(myDataLength);
-	CGContextRef context			= CGBitmapContextCreate(pixels, tx,
+	CGContextRef context			= CGBitmapContextCreate([pixels mutableBytes], tx,
                                                     ty, CGImageGetBitsPerComponent(iref), CGImageGetBytesPerRow(iref),
                                                     CGImageGetColorSpace(iref), bitmapInfo);
 	CGContextTranslateCTM(context, 0.0f, ty);
@@ -192,12 +206,14 @@
 	CGImageRef outputRef			= CGBitmapContextCreateImage(context);
 	UIImage* image					= [[UIImage alloc] initWithCGImage:outputRef];
   
-	free(pixels);
 	CGImageRelease(iref);
 	CGContextRelease(context);
 	CGColorSpaceRelease(colorSpaceRef);
 	CGDataProviderRelease(provider);
 	CGImageRelease(outputRef);
+	
+	[pixels release];
+	[buffer release];
   
 	return [image autorelease];
 }

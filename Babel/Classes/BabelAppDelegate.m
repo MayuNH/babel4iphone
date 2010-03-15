@@ -22,7 +22,7 @@
 
 @synthesize window;
 
--(void) applicationDidFinishLaunching:(UIApplication*)application
+- (void) applicationDidFinishLaunching:(UIApplication*)application
 {
 	// Init the window
 	window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -74,34 +74,29 @@
 	[[SharedData Initialize] sendToServer:@"F|U55555"];
 }
 
--(void) applicationWillResignActive:(UIApplication *)application
-{
+
+- (void)applicationWillResignActive:(UIApplication *)application {
 	[[CCDirector sharedDirector] pause];
 }
 
--(void) applicationDidBecomeActive:(UIApplication *)application
-{
+- (void)applicationDidBecomeActive:(UIApplication *)application {
 	[[CCDirector sharedDirector] resume];
 }
 
--(void) applicationDidReceiveMemoryWarning:(UIApplication *)application
-{
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 	[[CCTextureCache sharedTextureCache] removeUnusedTextures];
 }
 
--(void) applicationWillTerminate:(UIApplication *)application
-{
+- (void)applicationWillTerminate:(UIApplication *)application {
 	[[CCDirector sharedDirector] end];
 	[self release];
 }
 
--(void) applicationSignificantTimeChange:(UIApplication *)application
-{
+- (void)applicationSignificantTimeChange:(UIApplication *)application {
 	[[CCDirector sharedDirector] setNextDeltaTimeZero:YES];
 }
 
--(void) dealloc
-{
+- (void)dealloc {
 	[[CCDirector sharedDirector] release];
 	[[SharedData Initialize] release];
 	[window release];

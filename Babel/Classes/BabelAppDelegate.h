@@ -27,8 +27,7 @@
 #import "GameLayer.h"
 #import "InterfaceLayer.h"
 
-@interface BabelAppDelegate : NSObject <UIApplicationDelegate>
-{
+@interface BabelAppDelegate : NSObject <UIApplicationDelegate> {
 	UIWindow *window;
 }
 

@@ -4,7 +4,6 @@
  *
  *  Created by João Caxaria on 5/24/09.
  *  Copyright 2009 Cocos2d-iPhone - If you find this useful, please give something back.
- *
  */
 
 #import "SimpleAudioEngine.h"
@@ -54,7 +53,8 @@ static CDAudioManager *am = nil;
 		channelGroups[0] = CD_MAX_SOURCES - 1;
 		//Setting up the audio manager with this mode means that if the user is playing music when the app starts then 
 		//background music will not be played.
-		am = [[CDAudioManager alloc] init:kAudioManagerFxPlusMusicIfNoOtherAudio channelGroupDefinitions:channelGroups channelGroupTotal:1];
+		[CDAudioManager configure:kAMM_FxPlusMusicIfNoOtherAudio channelGroupDefinitions:channelGroups channelGroupTotal:1];
+		am = [CDAudioManager sharedManager];//Issue #748
 		soundEngine = am.soundEngine;
 		loadedEffects = [[NSMutableDictionary alloc] initWithCapacity:CD_MAX_BUFFERS];
 		
@@ -66,16 +66,19 @@ static CDAudioManager *am = nil;
 // Memory
 - (void) dealloc
 {
-	[am release];
 	am = nil;
-	
 	soundEngine = nil;
-	
 	[loadedEffects autorelease];
 	loadedEffects = nil;
-	
 	[super dealloc];
 }
+
++(void) end 
+{
+	am = nil;
+	[CDAudioManager end];
+	[sharedEngine release];
+}	
 
 #pragma mark SimpleAudioEngine - background music
 

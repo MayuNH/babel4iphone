@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2008,2009 Ricardo Quesada
+ * Copyright (C) 2008,2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -29,8 +29,8 @@
  */
 
 // 0x00 HI ME LO
-// 00   00 09 00
-#define COCOS2D_VERSION 0x00000900
+// 00   00 99 01
+#define COCOS2D_VERSION 0x00009901
 
 //
 // all cocos2d include files
@@ -62,7 +62,6 @@
 #import "CCSpriteSheet.h"
 #import "CCSpriteFrameCache.h"
 #import "CCTextureCache.h"
-#import "CCTextureNode.h"
 #import "CCTransition.h"
 #import "CCTextureAtlas.h"
 #import "CCLabelAtlas.h"
@@ -77,6 +76,8 @@
 #import "CCParallaxNode.h"
 #import "CCActionManager.h"
 #import "CCTMXTiledMap.h"
+#import "CCTMXLayer.h"
+#import "CCTMXObjectGroup.h"
 #import "CCTMXXMLParser.h"
 #import "CCTileMapAtlas.h"
 #import "CCRenderTexture.h"
@@ -87,6 +88,9 @@
 #import "CCPVRTexture.h"
 #import "CCTouchHandler.h"
 #import "ccConfig.h"
+#import "CCConfiguration.h"
+#import "CCRadialTransition.h"
+#import "CCProgressTimerActions.h"
 
 //
 // cocos2d macros

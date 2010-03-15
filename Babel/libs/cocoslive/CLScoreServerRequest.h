@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2008,2009 Ricardo Quesada
+ * Copyright (C) 2008,2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -60,7 +60,13 @@ typedef enum {
 	// To determine which delegate method will be called in connectionDidFinishLoading: of NSURLConnection Delegate
 	BOOL reqRankOnly;
 	
+	/// the connection
+	NSURLConnection	*connection_;
 }
+
+/** connection to the server */
+@property (nonatomic, retain) NSURLConnection *connection;
+
 
 /** creates a ScoreServerRequest server with a game name*/
 +(id) serverWithGameName:(NSString*) name delegate:(id)delegate;

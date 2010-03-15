@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2009 Ricardo Quesada
+ * Copyright (C) 2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -30,6 +30,14 @@ enum {
 	TMXLayerAttribGzip = 1 << 2,
 };
 
+enum {
+	TMXPropertyNone,
+	TMXPropertyMap,
+	TMXPropertyLayer,
+	TMXPropertyObjectGroup,
+	TMXPropertyObject,
+};
+
 /* CCTMXLayerInfo contains the information about the layers like:
  - Layer name
  - Layer size
@@ -40,25 +48,28 @@ enum {
  */
 @interface CCTMXLayerInfo : NSObject
 {
-	NSString		*name_;
-	CGSize			layerSize_;
-	unsigned int	*tiles_;
-	BOOL			visible_;
-	unsigned char	opacity_;
-	BOOL			ownTiles_;
-	unsigned int	minGID_;
-	unsigned int	maxGID_;
+	NSString			*name_;
+	CGSize				layerSize_;
+	unsigned int		*tiles_;
+	BOOL				visible_;
+	unsigned char		opacity_;
+	BOOL				ownTiles_;
+	unsigned int		minGID_;
+	unsigned int		maxGID_;
+	NSMutableDictionary	*properties_;
+	CGPoint				offset_;
 }
 
-@property (nonatomic,readwrite,retain) NSString *name;
-@property (nonatomic,readwrite,assign) CGSize layerSize;
-@property (nonatomic,readwrite,assign) unsigned int *tiles;
-@property (nonatomic,readwrite,assign) BOOL visible;
-@property (nonatomic,readwrite,assign) unsigned char opacity;
-@property (nonatomic,readwrite,assign) BOOL ownTiles;
-@property (nonatomic,readwrite,assign) unsigned int minGID;
-@property (nonatomic,readwrite,assign) unsigned int maxGID;
-
+@property (nonatomic,readwrite,retain)	NSString *name;
+@property (nonatomic,readwrite)			CGSize layerSize;
+@property (nonatomic,readwrite)			unsigned int *tiles;
+@property (nonatomic,readwrite)			BOOL visible;
+@property (nonatomic,readwrite)			unsigned char opacity;
+@property (nonatomic,readwrite)			BOOL ownTiles;
+@property (nonatomic,readwrite)			unsigned int minGID;
+@property (nonatomic,readwrite)			unsigned int maxGID;
+@property (nonatomic,readwrite,retain) NSMutableDictionary *properties;
+@property (nonatomic,readwrite)			CGPoint offset;
 @end
 
 /* CCTMXTilesetInfo contains the information about the tilesets like:
@@ -104,6 +115,7 @@ enum {
  And it also contains:
  - Layers (an array of TMXLayerInfo objects)
  - Tilesets (an array of TMXTilesetInfo objects)
+ - ObjectGroups (an array of TMXObjectGroupInfo objects)
  
  This information is obtained from the TMX file.
  
@@ -113,6 +125,7 @@ enum {
 	NSMutableString		*currentString;
     BOOL				storingCharacters;	
 	int					layerAttribs;
+	int					parentElement;
 	
 	// tmx filename
 	NSString *filename_;
@@ -131,6 +144,12 @@ enum {
 	
 	// tilesets
 	NSMutableArray *tilesets_;
+		
+	// ObjectGroups
+	NSMutableArray *objectGroups_;
+	
+	// properties
+	NSMutableDictionary *properties_;
 }
 
 @property (nonatomic,readwrite,assign) int orientation;
@@ -139,6 +158,8 @@ enum {
 @property (nonatomic,readwrite,retain) NSMutableArray *layers;
 @property (nonatomic,readwrite,retain) NSMutableArray *tilesets;
 @property (nonatomic,readwrite,retain) NSString *filename;
+@property (nonatomic,readwrite,retain) NSMutableArray *objectGroups;
+@property (nonatomic,readwrite,retain) NSMutableDictionary *properties;
 
 /** creates a TMX Format with a tmx file */
 +(id) formatWithTMXFile:(NSString*)tmxFile;

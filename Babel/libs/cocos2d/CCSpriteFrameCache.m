@@ -35,37 +35,27 @@ static CCSpriteFrameCache *sharedSpriteFrameCache_=nil;
 
 + (CCSpriteFrameCache *)sharedSpriteFrameCache
 {
-	@synchronized([CCSpriteFrameCache class])
-	{
-		if (!sharedSpriteFrameCache_)
-			sharedSpriteFrameCache_ = [[CCSpriteFrameCache alloc] init];
+	if (!sharedSpriteFrameCache_)
+		sharedSpriteFrameCache_ = [[CCSpriteFrameCache alloc] init];
 		
-	}
 	return sharedSpriteFrameCache_;
 }
 
 +(id)alloc
 {
-	@synchronized([CCSpriteFrameCache class])
-	{
-		NSAssert(sharedSpriteFrameCache_ == nil, @"Attempted to allocate a second instance of a singleton.");
-		return [super alloc];
-	}
-	// to avoid compiler warning
-	return nil;
+	NSAssert(sharedSpriteFrameCache_ == nil, @"Attempted to allocate a second instance of a singleton.");
+	return [super alloc];
 }
 
 +(void)purgeSharedSpriteFrameCache
 {
-	@synchronized( self ) {
-		[sharedSpriteFrameCache_ release];
-	}
+	[sharedSpriteFrameCache_ release];
 }
 
 -(id) init
 {
 	if( (self=[super init]) ) {
-		spriteFrames = [[NSMutableDictionary dictionaryWithCapacity: 100] retain];
+		spriteFrames = [[NSMutableDictionary alloc] initWithCapacity: 100];
 	}
 	
 	return self;
@@ -78,7 +68,7 @@ static CCSpriteFrameCache *sharedSpriteFrameCache_=nil;
 
 -(void) dealloc
 {
-	CCLOG(@"cocos2d: deallocing %@", self);
+	CCLOGINFO(@"cocos2d: deallocing %@", self);
 	
 	[spriteFrames release];
 	[super dealloc];
@@ -88,21 +78,65 @@ static CCSpriteFrameCache *sharedSpriteFrameCache_=nil;
 
 -(void) addSpriteFramesWithDictionary:(NSDictionary*)dictionary texture:(CCTexture2D*)texture
 {
+	/*
+	Supported Zwoptex Formats:
+		enum {
+			ZWTCoordinatesListXMLFormat_Legacy = 0
+			ZWTCoordinatesListXMLFormat_v1_0,
+		};
+	*/
+	NSDictionary *metadataDict = [dictionary objectForKey:@"metadata"];
 	NSDictionary *framesDict = [dictionary objectForKey:@"frames"];
+	int format = 0;
+	
+	// get the format
+	if(metadataDict != nil) {
+		format = [[metadataDict objectForKey:@"format"] intValue];
+	}
+	
+	// check the format
+	if(format < 0 || format > 1) {
+		NSAssert(NO,@"cocos2d: WARNING: format is not supported for CCSpriteFrameCache addSpriteFramesWithDictionary:texture:");
+		return;
+	}
+	
 	for(NSString *frameDictKey in framesDict) {
 		NSDictionary *frameDict = [framesDict objectForKey:frameDictKey];
-		float x = [[frameDict objectForKey:@"x"] floatValue];
-		float y = [[frameDict objectForKey:@"y"] floatValue];
-		float w = [[frameDict objectForKey:@"width"] floatValue];
-		float h = [[frameDict objectForKey:@"height"] floatValue];
-		float ox = [[frameDict objectForKey:@"offsetX"] floatValue];
-		float oy = [[frameDict objectForKey:@"offsetY"] floatValue];
-		BOOL fx = [[frameDict objectForKey:@"flipX"] boolValue];
-		BOOL fy = [[frameDict objectForKey:@"flipX"] boolValue];
-		
-		CCSpriteFrame *frame = [CCSpriteFrame frameWithTexture:texture rect:CGRectMake(x,y,w,h) offset:CGPointMake(ox,oy) flipX:fx flipY:fy];
-		
-		[spriteFrames setObject:frame forKey:frameDictKey];
+		CCSpriteFrame *spriteFrame;
+		if(format == 0) {
+			float x = [[frameDict objectForKey:@"x"] floatValue];
+			float y = [[frameDict objectForKey:@"y"] floatValue];
+			float w = [[frameDict objectForKey:@"width"] floatValue];
+			float h = [[frameDict objectForKey:@"height"] floatValue];
+			float ox = [[frameDict objectForKey:@"offsetX"] floatValue];
+			float oy = [[frameDict objectForKey:@"offsetY"] floatValue];
+			int ow = [[frameDict objectForKey:@"originalWidth"] intValue];
+			int oh = [[frameDict objectForKey:@"originalHeight"] intValue];
+			// check ow/oh
+			if(!ow || !oh) {
+				CCLOG(@"cocos2d: WARNING: originalWidth/Height not found on the CCSpriteFrame. AnchorPoint won't work as expected. Regenrate the .plist");
+			}
+			// abs ow/oh
+			ow = abs(ow);
+			oh = abs(oh);
+			// create frame
+			spriteFrame = [CCSpriteFrame frameWithTexture:texture rect:CGRectMake(x, y, w, h) offset:CGPointMake(ox, oy) originalSize:CGSizeMake(ow, oh)];
+		} else if(format == 1) {
+			CGRect frame = CGRectFromString([frameDict objectForKey:@"frame"]);
+			CGPoint offset = CGPointFromString([frameDict objectForKey:@"offset"]);
+			CGSize sourceSize = CGSizeFromString([frameDict objectForKey:@"sourceSize"]);
+			/*
+			CGRect sourceColorRect = CGRectFromString([frameDict objectForKey:@"sourceColorRect"]);
+			int leftTrim = sourceColorRect.origin.x;
+			int topTrim = sourceColorRect.origin.y;
+			int rightTrim = sourceColorRect.size.width + leftTrim;
+			int bottomTrim = sourceColorRect.size.height + topTrim;
+			*/
+			// create frame
+			spriteFrame = [CCSpriteFrame frameWithTexture:texture rect:frame offset:offset originalSize:sourceSize];
+		}
+		// add sprite frame
+		[spriteFrames setObject:spriteFrame forKey:frameDictKey];
 	}
 	
 }

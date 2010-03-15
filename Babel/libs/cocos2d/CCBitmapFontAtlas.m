@@ -26,8 +26,10 @@
 #import "CCBitmapFontAtlas.h"
 #import "CCSprite.h"
 #import "CCDrawingPrimitives.h"
+#import "CCConfiguration.h"
 #import "Support/CCFileUtils.h"
 #import "Support/CGPointExtension.h"
+#import "Support/ccHashSet.h"
 
 #pragma mark -
 #pragma mark FNTConfig Cache - free functions
@@ -52,6 +54,24 @@ CCBitmapFontConfiguration* FNTConfigLoadFile( NSString *fntFile)
 void FNTConfigRemoveCache( void )
 {
 	[configurations removeAllObjects];
+}
+
+#pragma mark - Hash Element
+
+// Equal function for targetSet.
+typedef struct _KerningHashElement
+{
+	unichar			first;
+	unichar			second;
+	int				amount;
+} tKerningHashElement;
+
+static int
+targetSetEql(void *ptr, void *elt)
+{
+	tKerningHashElement *one = (tKerningHashElement*) ptr;
+	tKerningHashElement *two = (tKerningHashElement*) elt;
+	return ( (one->first == two->first) && (one->second == two->second));
 }
 
 #pragma mark -
@@ -84,8 +104,9 @@ void FNTConfigRemoveCache( void )
 
 - (void) dealloc
 {
-	CCLOG( @"cocos2d: deallocing %@", self);
-	[kerningDictionary release];
+	CCLOGINFO( @"cocos2d: deallocing %@", self);
+	if(kerningDictionary)
+		ccHashSetFree(kerningDictionary);
 	[super dealloc];
 }
 
@@ -228,17 +249,18 @@ void FNTConfigRemoveCache( void )
 	// base (ignore)
 	[nse nextObject];
 	
+	
 	// scaleW. sanity check
-	propertyValue = [nse nextObject];
-	NSAssert( [propertyValue intValue] <= 1024, @"BitmapFontAtlas: page can't be larger than 1024x1024");
+	propertyValue = [nse nextObject];	
+	NSAssert( [propertyValue intValue] <= [[CCConfiguration sharedConfiguration] maxTextureSize], @"CCBitmapFontAtlas: page can't be larger than supported");
 	
 	// scaleH. sanity check
 	propertyValue = [nse nextObject];
-	NSAssert( [propertyValue intValue] <= 1024, @"BitmapFontAtlas: page can't be larger than 1024x1024");
+	NSAssert( [propertyValue intValue] <= [[CCConfiguration sharedConfiguration] maxTextureSize], @"CCBitmapFontAtlas: page can't be larger than supported");
 	
 	// pages. sanity check
 	propertyValue = [nse nextObject];
-	NSAssert( [propertyValue intValue] == 1, @"BitfontAtlas: only supports 1 page");
+	NSAssert( [propertyValue intValue] == 1, @"CCBitfontAtlas: only supports 1 page");
 	
 	// packed (ignore) What does this mean ??
 }
@@ -298,7 +320,7 @@ void FNTConfigRemoveCache( void )
 	int capacity = [propertyValue intValue];
 	
 	if( capacity != -1 )
-		kerningDictionary = [[NSMutableDictionary dictionaryWithCapacity: [propertyValue intValue]] retain];
+		kerningDictionary = ccHashSetNew(capacity, targetSetEql);
 }
 
 -(void) parseKerningEntry:(NSString*) line
@@ -321,11 +343,13 @@ void FNTConfigRemoveCache( void )
 	// second
 	propertyValue = [nse nextObject];
 	int amount = [propertyValue intValue];
-	
-	NSString *key = [NSString stringWithFormat:@"%d,%d", first, second];
-	NSNumber *value = [NSNumber numberWithInt:amount];
-	
-	[kerningDictionary setObject:value forKey:key];
+
+	tKerningHashElement *element = malloc( sizeof( *element ) );
+	element->first = first;
+	element->second = second;
+	element->amount = amount;
+	unsigned int key = (first<<16) | (second&0xffff);
+	ccHashSetInsert(kerningDictionary, CC_HASH_INT(key), element, nil);	
 }
 
 @end
@@ -417,7 +441,7 @@ void FNTConfigRemoveCache( void )
 			NSArray *array = [propertyValue componentsSeparatedByString:@"\""];
 			propertyValue = [array objectAtIndex:1];
 			break;
-		}		
+		}
 	}
 	// Finished with lines so release it
 	[lines release];	
@@ -434,10 +458,17 @@ void FNTConfigRemoveCache( void )
 -(int) kerningAmountForFirst:(unichar)first second:(unichar)second
 {
 	int ret = 0;
-	NSString *key = [NSString stringWithFormat:@"%d,%d", first, second];
-	NSNumber *value = [configuration->kerningDictionary objectForKey:key];
-	if(value)
-		ret = [value intValue];
+	tKerningHashElement elementTmp;
+	elementTmp.first = first;
+	elementTmp.second = second;
+	unsigned int key = (first<<16) | (second & 0xffff);
+	
+	if( configuration->kerningDictionary ) {
+		tKerningHashElement *element = ccHashSetFind(configuration->kerningDictionary, CC_HASH_INT(key), &elementTmp);
+		
+		if(element)
+			ret = element->amount;
+	}
 		
 	return ret;
 }
@@ -465,13 +496,18 @@ void FNTConfigRemoveCache( void )
 		
 		fontChar = (CCSprite*) [self getChildByTag:i];
 		if( ! fontChar ) {
-			fontChar = [self createSpriteWithRect:rect];
+			fontChar = [[CCSprite alloc] initWithSpriteSheet:self rect:rect];
 			[self addChild:fontChar z:0 tag:i];
+			[fontChar release];
 		}
-		else
+		else {
+			// reusing fonts
 			[fontChar setTextureRect:rect];
-
-		fontChar.visible = YES;
+			
+			// restore to default in case they were modified
+			fontChar.visible = YES;
+			fontChar.opacity = 255;
+		}
 
 		fontChar.position = ccp( nextFontPositionX + fontDef.xOffset + fontDef.rect.size.width / 2.0f ,
 								(configuration->commonHeight - fontDef.yOffset) - rect.size.height/2.0f );		
@@ -490,7 +526,11 @@ void FNTConfigRemoveCache( void )
 		[fontChar setOpacityModifyRGB:opacityModifyRGB_];
 		// Color MUST be set before opacity, since opacity might change color if OpacityModifyRGB is on
 		[fontChar setColor:color_];
-		[fontChar setOpacity: opacity_];
+
+		// only apply opaccity if it is different than 255 )
+		// to prevent modifying the color too (issue #610)
+		if( opacity_ != 255 )
+			[fontChar setOpacity: opacity_];
 	}
 	
 	[self setContentSize:tmpSize];
@@ -502,7 +542,7 @@ void FNTConfigRemoveCache( void )
 	[string_ release];
 	string_ = [newString retain];
 
-	for( CCNode *child in children )
+	for( CCNode *child in children_ )
 		child.visible = NO;
 
 	[self createFontChars];
@@ -513,7 +553,7 @@ void FNTConfigRemoveCache( void )
 -(void) setColor:(ccColor3B)color
 {
 	color_ = color;
-	for( CCSprite* child in children )
+	for( CCSprite* child in children_ )
 		[child setColor:color_];
 }
 
@@ -521,15 +561,16 @@ void FNTConfigRemoveCache( void )
 {
 	opacity_ = opacity;
 
- 	for( id<CCRGBAProtocol> child in children )
+ 	for( id<CCRGBAProtocol> child in children_ )
 		[child setOpacity:opacity_];
 }
 -(void) setOpacityModifyRGB:(BOOL)modify
 {
 	opacityModifyRGB_ = modify;
- 	for( id<CCRGBAProtocol> child in children )
+ 	for( id<CCRGBAProtocol> child in children_ )
 		[child setOpacityModifyRGB:modify];
 }
+
 -(BOOL) doesOpacityModifyRGB
 {
 	return opacityModifyRGB_;
@@ -554,7 +595,7 @@ void FNTConfigRemoveCache( void )
 		ccp(0,0),ccp(s.width,0),
 		ccp(s.width,s.height),ccp(0,s.height),
 	};
-	drawPoly(vertices, 4, YES);
+	ccDrawPoly(vertices, 4, YES);
 }
 #endif // CC_BITMAPFONTATLAS_DEBUG_DRAW
 @end

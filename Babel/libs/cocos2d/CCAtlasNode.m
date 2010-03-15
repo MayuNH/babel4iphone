@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2008,2009 Ricardo Quesada
+ * Copyright (C) 2008,2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -25,7 +25,6 @@
 
 @implementation CCAtlasNode
 
-@synthesize opacity=opacity_, color=color_;
 @synthesize textureAtlas = textureAtlas_;
 @synthesize blendFunc = blendFunc_;
 
@@ -44,14 +43,16 @@
 		itemHeight = h;
 
 		opacity_ = 255;
-		color_ = ccWHITE;
-		opacityModifyRGB_ = NO;
+		color_ = colorUnmodified_ = ccWHITE;
+		opacityModifyRGB_ = YES;
 		
 		blendFunc_.src = CC_BLEND_SRC;
 		blendFunc_.dst = CC_BLEND_DST;
 		
-		// retained
-		self.textureAtlas = [CCTextureAtlas textureAtlasWithFile:tile capacity:c];
+		// double retain to avoid the autorelease pool
+		// also, using: self.textureAtlas supports re-initialization without leaking
+		self.textureAtlas = [[CCTextureAtlas alloc] initWithFile:tile capacity:c];
+		[textureAtlas_ release];
 		
 		[self updateBlendFunc];
 		[self updateOpacityModifyRGB];
@@ -81,8 +82,9 @@
 
 -(void) calculateTexCoordsSteps
 {
-	texStepX = itemWidth / (float) [[textureAtlas_ texture] pixelsWide];
-	texStepY = itemHeight / (float) [[textureAtlas_ texture] pixelsHigh]; 	
+	CCTexture2D *tex = [textureAtlas_ texture];
+	texStepX = itemWidth / (float) [tex pixelsWide];
+	texStepY = itemHeight / (float) [tex pixelsHigh]; 	
 }
 
 -(void) updateAtlasValues
@@ -93,10 +95,10 @@
 #pragma mark CCAtlasNode - draw
 - (void) draw
 {
-	glEnableClientState( GL_VERTEX_ARRAY);
-	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
-	
-	glEnable( GL_TEXTURE_2D);
+	// Default GL states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
+	// Needed states: GL_TEXTURE_2D, GL_VERTEX_ARRAY, GL_TEXTURE_COORD_ARRAY
+	// Unneeded states: GL_COLOR_ARRAY
+	glDisableClientState(GL_COLOR_ARRAY);
 
 	glColor4ub( color_.r, color_.g, color_.b, opacity_);
 
@@ -112,39 +114,65 @@
 		glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
 	
 	// is this chepear than saving/restoring color state ?
-	glColor4ub( 255, 255, 255, 255);
+	// XXX: There is no need to restore the color to (255,255,255,255). Objects should use the color
+	// XXX: that they need
+//	glColor4ub( 255, 255, 255, 255);
 
-	glDisable( GL_TEXTURE_2D);
-	
-	glDisableClientState(GL_VERTEX_ARRAY );
-	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	// restore default GL state
+	glEnableClientState(GL_COLOR_ARRAY);
+
 }
 
 #pragma mark CCAtlasNode - RGBA protocol
 
--(void) setRGB: (GLubyte)r :(GLubyte)g :(GLubyte)b
+- (ccColor3B) color
 {
-	[self setColor:ccc3(r,g,b)];
+	if(opacityModifyRGB_){
+		return colorUnmodified_;
+	}
+	return color_;
 }
 
--(void) setOpacity:(GLubyte)opacity
+-(void) setColor:(ccColor3B)color3
 {
+	color_ = colorUnmodified_ = color3;
+	
+	if( opacityModifyRGB_ ){
+		color_.r = color3.r * opacity_/255;
+		color_.g = color3.g * opacity_/255;
+		color_.b = color3.b * opacity_/255;
+	}	
+}
+
+-(GLubyte) opacity
+{
+	return opacity_;
+}
+
+-(void) setOpacity:(GLubyte) anOpacity
+{
+	opacity_			= anOpacity;
+	
 	// special opacity for premultiplied textures
-	opacity_ = opacity;
 	if( opacityModifyRGB_ )
-		color_.r = color_.g = color_.b = opacity_;	
+		[self setColor: (opacityModifyRGB_ ? colorUnmodified_ : color_ )];	
 }
--(void) updateOpacityModifyRGB
-{
-	opacityModifyRGB_ = [textureAtlas_.texture hasPremultipliedAlpha];
-}
+
 -(void) setOpacityModifyRGB:(BOOL)modify
 {
-	opacityModifyRGB_ = modify;
+	ccColor3B oldColor	= self.color;
+	opacityModifyRGB_	= modify;
+	self.color			= oldColor;
 }
+
 -(BOOL) doesOpacityModifyRGB
 {
 	return opacityModifyRGB_;
+}
+
+-(void) updateOpacityModifyRGB
+{
+	opacityModifyRGB_ = [textureAtlas_.texture hasPremultipliedAlpha];
 }
 
 #pragma mark CCAtlasNode - CocosNodeTexture protocol
@@ -168,6 +196,5 @@
 {
 	return textureAtlas_.texture;
 }
-
 
 @end

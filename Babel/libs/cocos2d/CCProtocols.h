@@ -53,7 +53,7 @@
 #pragma mark CCBlendProtocol
 /**
  You can specify the blending fuction.
- @since v0.9.0
+ @since v0.99.0
  */
 @protocol CCBlendProtocol <NSObject>
 /** set the source blending function for the texture */
@@ -92,7 +92,7 @@
 @optional
 /** sets a new label using a CString.
  It is faster than setString since it doesn't require to alloc/retain/release an NString object.
- @since v0.9.0
+ @since v0.99.0
  */
 -(void) setCString:(char*)label;
 @end
@@ -118,15 +118,16 @@
 
 /// Nodes supports frames protocol
 /// @since v0.7.1
+@class CCSpriteFrame;
 @protocol CCFrameProtocol <NSObject>
 /** sets a new display frame to the node. */
--(void) setDisplayFrame:(id)newFrame;
+-(void) setDisplayFrame:(CCSpriteFrame*)newFrame;
 /** changes the display frame based on an animation and an index. */
 -(void) setDisplayFrame: (NSString*) animationName index:(int) frameIndex;
 /** returns the current displayed frame. */
--(BOOL) isFrameDisplayed:(id)frame;
+-(BOOL) isFrameDisplayed:(CCSpriteFrame*)frame;
 /** returns the current displayed frame. */
--(id) displayFrame;
+-(CCSpriteFrame*) displayedFrame;
 /** returns an Animation given it's name. */
 -(id<CCAnimationProtocol>)animationByName: (NSString*) animationName;
 /** adds an Animation to the Sprite. */

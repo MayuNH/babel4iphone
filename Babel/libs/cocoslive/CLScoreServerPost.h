@@ -2,7 +2,7 @@
  *
  * http://www.cocos2d-iphone.org
  *
- * Copyright (C) 2008,2009 Ricardo Quesada
+ * Copyright (C) 2008,2009,2010 Ricardo Quesada
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the 'cocos2d for iPhone' license.
@@ -81,11 +81,17 @@ enum {
 	
 	/// mdt context
 	CC_MD5_CTX		md5Ctx;
+	
+	/// the connection
+	NSURLConnection	*connection_;
 }
 
 /** status from the score post */ 
 @property (nonatomic,readonly) tPostStatus postStatus;
  
+/** connection to the server */
+@property (nonatomic, retain) NSURLConnection *connection;
+
 /** ranking of your score
  @since v0.7.3
  */
