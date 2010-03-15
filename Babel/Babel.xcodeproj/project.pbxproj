@@ -213,6 +213,7 @@
 		88100436114ECAE200B91803 /* button2.png in Resources */ = {isa = PBXBuildFile; fileRef = 8810042C114ECAE200B91803 /* button2.png */; };
 		88100437114ECAE200B91803 /* Dan.png in Resources */ = {isa = PBXBuildFile; fileRef = 8810042D114ECAE200B91803 /* Dan.png */; };
 		88100438114ECAE200B91803 /* forgotte.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8810042E114ECAE200B91803 /* forgotte.ttf */; };
+		882A0B0F114ECD250022C236 /* gameDB.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 882A0B0E114ECD250022C236 /* gameDB.sqlite */; };
 		88390FFE114EC54300B47631 /* Character.m in Sources */ = {isa = PBXBuildFile; fileRef = 88390FF1114EC54300B47631 /* Character.m */; };
 		88390FFF114EC54300B47631 /* CoreFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 88390FF3114EC54300B47631 /* CoreFunctions.m */; };
 		88391000114EC54300B47631 /* GameLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 88390FF5114EC54300B47631 /* GameLayer.m */; };
@@ -447,6 +448,7 @@
 		8810042C114ECAE200B91803 /* button2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button2.png; sourceTree = "<group>"; };
 		8810042D114ECAE200B91803 /* Dan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Dan.png; sourceTree = "<group>"; };
 		8810042E114ECAE200B91803 /* forgotte.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = forgotte.ttf; sourceTree = "<group>"; };
+		882A0B0E114ECD250022C236 /* gameDB.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = gameDB.sqlite; sourceTree = SOURCE_ROOT; };
 		88390FF0114EC54300B47631 /* Character.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Character.h; sourceTree = "<group>"; };
 		88390FF1114EC54300B47631 /* Character.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Character.m; sourceTree = "<group>"; };
 		88390FF2114EC54300B47631 /* CoreFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreFunctions.h; sourceTree = "<group>"; };
@@ -843,6 +845,7 @@
 		50F414EB1069373D002A0D5E /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				882A0B0E114ECD250022C236 /* gameDB.sqlite */,
 				88100425114ECAE200B91803 /* Abduction.ttf */,
 				88100426114ECAE200B91803 /* arena.png */,
 				88100427114ECAE200B91803 /* arrow.png */,
@@ -1041,6 +1044,7 @@
 				88100436114ECAE200B91803 /* button2.png in Resources */,
 				88100437114ECAE200B91803 /* Dan.png in Resources */,
 				88100438114ECAE200B91803 /* forgotte.ttf in Resources */,
+				882A0B0F114ECD250022C236 /* gameDB.sqlite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

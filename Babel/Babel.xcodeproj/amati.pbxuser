@@ -10,19 +10,19 @@
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {1113, 1352}}";
 			sepNavSelRange = "{2445, 0}";
-			sepNavVisRange = "{240, 1600}";
+			sepNavVisRange = "{0, 1488}";
 		};
 	};
 	1F3B9A2C0EF2145700286867 /* BabelAppDelegate.h */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1113, 555}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
 			sepNavSelRange = "{787, 0}";
 			sepNavVisRange = "{0, 1063}";
 		};
 	};
 	1F3B9A820EF2151B00286867 /* Babel_Prefix.pch */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1113, 560}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
 			sepNavSelRange = "{0, 0}";
 			sepNavVisRange = "{0, 173}";
 		};
@@ -92,9 +92,9 @@
 	};
 	29B97316FDCFA39411CA2CEA /* main.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1113, 560}}";
-			sepNavSelRange = "{351, 0}";
-			sepNavVisRange = "{0, 351}";
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
+			sepNavSelRange = "{955, 0}";
+			sepNavVisRange = "{0, 958}";
 		};
 	};
 	506EE05D10304ED200A389B3 /* cocos2d libraries */ = {
@@ -184,25 +184,102 @@
 		isa = PBXCodeSenseManager;
 		indexTemplatePath = "";
 	};
+	88390FF0114EC54300B47631 /* Character.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 1040}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1067}";
+		};
+	};
 	88390FF1114EC54300B47631 /* Character.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1171, 1235}}";
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 1222}}";
 			sepNavSelRange = "{0, 0}";
-			sepNavVisRange = "{0, 1482}";
+			sepNavVisRange = "{0, 1453}";
+		};
+	};
+	88390FF2114EC54300B47631 /* CoreFunctions.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 676}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1408}";
+		};
+	};
+	88390FF3114EC54300B47631 /* CoreFunctions.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 2574}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1507}";
+		};
+	};
+	88390FF4114EC54300B47631 /* GameLayer.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1086}";
 		};
 	};
 	88390FF5114EC54300B47631 /* GameLayer.m */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {1113, 1027}}";
 			sepNavSelRange = "{984, 0}";
-			sepNavVisRange = "{309, 1233}";
+			sepNavVisRange = "{0, 1350}";
+		};
+	};
+	88390FF6114EC54300B47631 /* InterfaceLayer.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 572}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1358}";
+		};
+	};
+	88390FF7114EC54300B47631 /* InterfaceLayer.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1160, 2392}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1811}";
+		};
+	};
+	88390FF8114EC54300B47631 /* MenuLayer.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 808}";
+		};
+	};
+	88390FF9114EC54300B47631 /* MenuLayer.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 611}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1360}";
+		};
+	};
+	88390FFA114EC54300B47631 /* MyMoveTo.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 550}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 893}";
+		};
+	};
+	88390FFB114EC54300B47631 /* MyMoveTo.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 585}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 1489}";
 		};
 	};
 	88390FFC114EC54300B47631 /* SharedData.h */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {1113, 624}}";
+			sepNavSelRange = "{739, 0}";
+			sepNavVisRange = "{0, 1378}";
+		};
+	};
+	88390FFD114EC54300B47631 /* SharedData.m */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1113, 4472}}";
 			sepNavSelRange = "{0, 0}";
-			sepNavVisRange = "{0, 1315}";
+			sepNavVisRange = "{0, 1487}";
 		};
 	};
 	88391028114EC62700B47631 /* arrow.png */ = {
@@ -308,7 +385,7 @@
 		fRef = 29B97316FDCFA39411CA2CEA /* main.m */;
 		name = "main.m: 17";
 		rLen = 0;
-		rLoc = 351;
+		rLoc = 958;
 		rType = 0;
 		vrLen = 351;
 		vrLoc = 0;
