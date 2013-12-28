@@ -33,4 +33,4 @@ The game server is implemented in python 2.5+, the scripts are in directory name
 ABOUT DATABASE
 ==============
 
-Both client and server uses a sqlite3 database (python needs a module).
+Both client and server uses a sqlite3 database (python needs a module).ok
