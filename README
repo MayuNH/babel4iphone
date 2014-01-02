@@ -36,3 +36,4 @@ ABOUT DATABASE
 Both client and server uses a sqlite3 database (python needs a module).ok
 ok
 ok
+ok
